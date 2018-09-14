@@ -13,3 +13,4 @@ java -jar testrun.jar -submission=player15 -evaluation=BentCigarFunction -seed=1
 ```
 (This testruns on BentCigarFunction)
 
+player15 submission code: BZrgUlw=
