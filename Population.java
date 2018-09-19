@@ -98,10 +98,7 @@ public class Population
     
         public void mutate(Random rnd, double factor)
         {
-            for (int i = 0; i < genome.length; i++)
-            {
-                genome[i] += (rnd.nextDouble() - 0.5) * factor;
-            }
+            genome = Mutation.mutate(genome, rnd, factor);
         }
     
         public String toString()
