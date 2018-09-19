@@ -71,9 +71,10 @@ public class player15 implements ContestSubmission
         // init population
         Population myPop = new Population(popSize, evaluation_::evaluate);
         myPop.init(rnd_);
+//        myPop.print();
         
         // calculate fitness
-        while(evals<1000){//evaluations_limit_){    //XXX
+        while(evals<10000){//evaluations_limit_ - popSize){    //XXX
             // Select parents
             evals += myPop.evaluate();
 //            myPop.print();
@@ -87,6 +88,7 @@ public class player15 implements ContestSubmission
             Double fitness = (double) evaluation_.evaluate(child);
             evals++;
 //            System.out.println("fitness> " + Double.toString(fitness));
+//            System.out.println("evals> " + Double.toString(evals));
             
             // Select survivors
             myPop.evolve(child, rnd_, mutationFactor);

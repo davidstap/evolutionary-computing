@@ -24,7 +24,7 @@ public class Population
     {
         for (Unit unit : units)
         {
-            unit.mutate(rnd, Unit.maxR - Unit.minR);
+            unit.init(rnd);
         }
     }
 
@@ -72,6 +72,7 @@ public class Population
     
         public static final double minR = -5.0;
         public static final double maxR = 5.0;
+        public static final double R = maxR - minR;
     
         private double[] genome;
         public double fitness;
@@ -96,9 +97,14 @@ public class Population
             genome = genome_.clone();
         }
     
+        public void init(Random rnd)
+        {
+            genome = Mutation.normal(genome, rnd, R, minR, maxR, 1);
+        }
+    
         public void mutate(Random rnd, double factor)
         {
-            genome = Mutation.mutate(genome, rnd, factor);
+            genome = Mutation.normal(genome, rnd, factor, minR, maxR);
         }
     
         public String toString()
