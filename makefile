@@ -1,7 +1,7 @@
 INFO := MainClass.txt
 FILE := $(lastword $(shell cat $(INFO)))
 
-FILES := Population $(FILE)
+FILES := Population $(FILE) Mutation
 JFILES := $(patsubst %,%.java,$(FILES))
 NESTCS := $(foreach file,$(FILES),$(wildcard $(file)$$*.class))
 CFILES := $(patsubst %,%.class,$(FILES)) $(NESTCS)
