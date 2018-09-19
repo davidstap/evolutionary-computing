@@ -4,7 +4,6 @@ import java.util.function.Function;
 
 public class Population
 {
-
     private static final int dim = 10;
 
     private Population.Unit[] units;
@@ -37,10 +36,23 @@ public class Population
         return units.length;
     }
 
-    public double[][] selectParents()
+    public double[][] selectParents(int n )
     {
         sort();
-        return new double[][]{ units[units.length - 1].getGenome() };
+
+
+        double[][] parents = new double[n][units[0].getGenome().length];
+
+        for (int i=0; i<n; i++)
+        {
+          parents[i] = units[units.length-1-i].getGenome();
+        }
+        return parents;
+
+
+        // return new double[][] { units[units.length - 1].getGenome(), units[units.length - 2].getGenome() };
+
+
     }
 
     public void evolve(double[] genome, Random rnd, double factor)
@@ -69,13 +81,13 @@ public class Population
 
     private class Unit implements Comparable<Unit>
     {
-    
+
         public static final double minR = -5.0;
         public static final double maxR = 5.0;
-    
+
         private double[] genome;
         public double fitness;
-    
+
         public Unit()
         {
             genome = new double[dim];
@@ -85,22 +97,22 @@ public class Population
             }
             fitness = 0.0;
         }
-    
+
         public double[] getGenome()
         {
             return genome.clone();
         }
-    
+
         public void setGenome(double[] genome_)
         {
             genome = genome_.clone();
         }
-    
+
         public void mutate(Random rnd, double factor)
         {
             genome = Mutation.mutate(genome, rnd, factor);
         }
-    
+
         public String toString()
         {
             String s = Double.toString(
@@ -112,13 +124,11 @@ public class Population
             }
             return s.substring(0, s.length() - 2) + "]";
         }
-    
+
         @Override
         public int compareTo(Unit unit)
         {
             return Double.compare(fitness, unit.fitness);
         }
-    
     }
-
 }
