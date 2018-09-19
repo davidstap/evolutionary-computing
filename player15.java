@@ -67,33 +67,32 @@ public class player15 implements ContestSubmission
 
         int evals = 0;
         int popSize = 4;
-        double mutationFactor = 1.0;
+        double mutationFactor = .1;
+//        evaluations_limit_ = 10000;
 
         // init population
-        Population myPop = new Population(popSize, evaluation_::evaluate);
-        myPop.init(rnd_);
+        Population myPop = new Population(popSize, evaluation_::evaluate, rnd_);
+//        myPop.print();
 
         // calculate fitness
-        while(evals<1000){//evaluations_limit_){    //XXX
+        while(evals<evaluations_limit_){    //XXX
             // Select parents
-            evals += myPop.evaluate();
+            evals = myPop.evaluate(evals, evaluations_limit_);
+            if (evals == evaluations_limit_) { break; }
 //            myPop.print();
-            myPop.sort();
 
-            double[][] parents = myPop.selectParents(2);
+            Population.Unit[] parents = myPop.selectParent();
 
             // Apply crossover / mutation operators
-						Recombination recom = new Recombination(parents);
-						// do e.g. discrete recombination
-						double[] child = recom.discreteRecombination();
+            Population.Unit child = parents[0];
 
             // Check fitness of unknown fuction
-            Double fitness = (double) evaluation_.evaluate(child);
-            evals++;
-            // System.out.println("fitness> " + Double.toString(fitness));
+//            System.out.println("evals> " + Double.toString(evals));
 
             // Select survivors
             myPop.evolve(child, rnd_, mutationFactor);
         }
+//        myPop.print();
+        Double fitness = myPop.getMaxFitness();
     }
 }

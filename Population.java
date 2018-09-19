@@ -9,31 +9,29 @@ public class Population
     private Population.Unit[] units;
     private Function<double[], Object> evaluationFunction;
 
-    public Population(int size, Function<double[], Object> evaluationFunction_)
+    public Population(
+            int size, Function<double[], Object> evaluationFunction_,
+            Random rnd)
     {
         units = new Unit[size];
         for (int i = 0; i < size; i++)
         {
-            units[i] = this.new Unit();
+            units[i] = this.new Unit(rnd);
         }
         evaluationFunction = evaluationFunction_;
     }
 
-    public void init(Random rnd)
+    public int evaluate(int evals, int evaluations_limit)
     {
         for (Unit unit : units)
         {
-            unit.mutate(rnd, Unit.maxR - Unit.minR);
-        }
-    }
-
-    public int evaluate()
-    {
-        for (Unit unit : units)
-        {
+            if (evals >= evaluations_limit) { break; }
+            if (unit.evaluated) { continue; }
             unit.fitness = (double) evaluationFunction.apply(unit.getGenome());
+            unit.evaluated = true;
+            evals++;
         }
-        return units.length;
+        return evals;
     }
 
     public double[][] selectParents(int n )
@@ -55,14 +53,30 @@ public class Population
 
     }
 
-    public void evolve(double[] genome, Random rnd, double factor)
+    public Unit[] selectParent()
+    {
+        sort();
+        return new Unit[] { units[units.length - 1] };
+    }
+
+    public void evolve(Unit unit, Random rnd, double factor)
     {
         for (int i = 0; i < units.length; i++)
         {
-            units[i].setGenome(genome);
-            if (i != 0) {
-                units[i].mutate(rnd, factor);
+            if (units[i] != unit) {
+                units[i] = new Unit(unit.mutate(rnd, factor));
             }
+        }
+    }
+
+    public double getMaxFitness()
+    {
+        sort();
+        if (units[0].evaluated) {
+            return units[0].fitness;
+        }
+        else {
+            return 0.0;
         }
     }
 
@@ -79,23 +93,33 @@ public class Population
         }
     }
 
-    private class Unit implements Comparable<Unit>
+    public class Unit implements Comparable<Unit>
     {
 
         public static final double minR = -5.0;
         public static final double maxR = 5.0;
+        public static final double R = maxR - minR;
 
-        private double[] genome;
+        private final double[] genome;
         public double fitness;
+        public boolean evaluated;
 
-        public Unit()
+        private void init()
         {
-            genome = new double[dim];
-            for (int i = 0; i < dim; i++)
-            {
-                genome[i] = 0.0;
-            }
             fitness = 0.0;
+            evaluated = false;
+        }
+
+        public Unit(Random rnd)
+        {
+            init();
+            genome = Mutation.normal(new double[dim], rnd, R, minR, maxR, 1);
+        }
+
+        public Unit(double[] genome_)
+        {
+            init();
+            genome = genome_;
         }
 
         public double[] getGenome()
@@ -103,24 +127,21 @@ public class Population
             return genome.clone();
         }
 
-        public void setGenome(double[] genome_)
+        public double[] mutate(Random rnd, double factor)
         {
-            genome = genome_.clone();
-        }
-
-        public void mutate(Random rnd, double factor)
-        {
-            genome = Mutation.mutate(genome, rnd, factor);
+            return Mutation.normal(getGenome(), rnd, factor, minR, maxR);
         }
 
         public String toString()
         {
-            String s = Double.toString(
-                    Math.round(fitness * 100) / 100.0) + " [";
+            String s = "";
+            if (evaluated) { s += "o "; } else { s += "x "; }
+            s += Double.toString(
+                    Math.round(fitness * 10) / 10.0) + " [";
             for (int i = 0; i < genome.length; i++)
             {
                 s += Double.toString(
-                        Math.round(genome[i] * 100) / 100.0) + ", ";
+                        Math.round(genome[i] * 10) / 10.0) + ", ";
             }
             return s.substring(0, s.length() - 2) + "]";
         }
@@ -128,7 +149,15 @@ public class Population
         @Override
         public int compareTo(Unit unit)
         {
-            return Double.compare(fitness, unit.fitness);
+            if (!evaluated) {
+                return -1;
+            }
+            else if (!unit.evaluated) {
+                return 1;
+            }
+            else {
+                return Double.compare(fitness, unit.fitness);
+            }
         }
     }
 }
