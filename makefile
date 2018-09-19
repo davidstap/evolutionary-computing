@@ -4,7 +4,7 @@ FILE := $(lastword $(shell cat $(INFO)))
 FILES := Population $(FILE)
 JFILES := $(patsubst %,%.java,$(FILES))
 NESTCS := $(foreach file,$(FILES),$(wildcard $(file)$$*.class))
-CFILES := $(patsubst %,%.class,$(FILES)) $(NESTCS)
+CFILES := $(subst $$,\$$,$(patsubst %,%.class,$(FILES)) $(NESTCS))
 
 
 all:
@@ -15,7 +15,7 @@ compile:
 	javac -cp contest.jar $(JFILES) -Xdiags:verbose
 
 submission:
-	jar cmf $(INFO) submission.jar $(subst $$,\$$,$(CFILES))
+	jar cmf $(INFO) submission.jar $(CFILES)
 
 test:
 	make -s testo
@@ -37,3 +37,6 @@ testk:
 tests:
 	export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$PWD; \
 	java -jar testrun.jar -submission=$(FILE) -evaluation=SchaffersEvaluation -seed=1
+
+clean:
+	rm -r *~ submission.jar tmp $(CFILES)
