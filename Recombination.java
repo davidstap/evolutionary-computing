@@ -60,14 +60,12 @@ public class Recombination
             }
             else
             {
-                // Verander in 1
                 child1[i] = arithmeticFunction(parents[0][i], parents[1][i]);
                 child2[i] = arithmeticFunction(parents[0][i], parents[1][i]);
             }
 
         }
-        Children children = new Children(child1, child2);
-        return children;
+        return new Children(child1, child2);
     }
 
     private double arithmeticFunction(double p1, double p2){
@@ -101,9 +99,7 @@ public class Recombination
             }
 
         }
-        Children children = new Children(child1, child2);
-
-        return children;
+        return new Children(child1, child2);
     }
 
 
@@ -118,9 +114,7 @@ public class Recombination
             child2[i] = arithmeticFunction(parents[0][i], parents[1][i]);
 
         }
-        Children children = new Children(child1, child2);
-
-        return children;
+        return new Children(child1, child2);
     }
 
 }

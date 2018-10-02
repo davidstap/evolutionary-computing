@@ -9,6 +9,10 @@ public class Population
     private Population.Unit[] units;
     private Function<double[], Object> evaluationFunction;
 
+    public Population()
+    {
+    }
+
     public Population(
             int size, Function<double[], Object> evaluationFunction_,
             Random rnd)
