@@ -81,11 +81,14 @@ public class player15 implements ContestSubmission
             // calculate fitness
             while(evals < evaluations_limit_){
 
-                Population.Unit[] parents = myPop.selectParent();
+                Population.Unit[] parent = myPop.selectParents(1);
+
+                Recombination recomb = new Recombination(myPop.selectParents(2));
+                Children children = recomb.discreteRecombination();
 
                 int[] N = {nChildren};
                 Population chPop = new Population(
-                        parents, N, evaluation_::evaluate, rnd_);
+                        parent, N, evaluation_::evaluate, rnd_);
 
                 chPop.mutate(rnd_, mutationFactor);
 

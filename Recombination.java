@@ -8,12 +8,19 @@ public class Recombination
 
     private double probability = 0.5;
 
-    public Recombination(double[][] parents)
+    public Recombination(Population.Unit[] parents)
     {
-        this.parents = parents;
+        double[][] units = new double[parents.length][parents[0].getGenome().length];
+        int i = 0;
+        for (Population.Unit parent : parents)
+        {
+            units[i] = parent.getGenome();
+            i++;
+        }
+        this.parents = units;
     }
 
-    public double[] discreteRecombination()
+    public Children discreteRecombination()
     {
       double[] child1 = new double[parents[0].length];
       double[] child2 = new double[parents[0].length];
@@ -33,11 +40,10 @@ public class Recombination
         }
       }
 
-      return child1;
+      return new Children(child1, child2);
     }
 
 
-    //TODO: simple arithmetic recombination (p65)
     public Children simpleArithmetic()
     {
         double[] child1 = new double[parents[0].length];
@@ -70,7 +76,6 @@ public class Recombination
 
     }
 
-    //TODO: arithmetic recombination (p66)
     public Children singleArithmeticRecom()
     {   
         double[] child1 = new double[parents[0].length];
@@ -102,7 +107,6 @@ public class Recombination
     }
 
 
-    //TODO: whole arithmetic recombination (p66)
     public Children wholeArithmeticRecom()
     {
         double[] child1 = new double[parents[0].length];

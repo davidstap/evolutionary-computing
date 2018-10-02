@@ -73,28 +73,16 @@ public class Population
         return evals;
     }
 
-    public double[][] selectParents(int n )
+    public Unit[] selectParents(int n )
     {
         sort();
-
-        double[][] parents = new double[n][units[0].getGenome().length];
+        Unit[] parents = new Unit[n];
 
         for (int i=0; i<n; i++)
         {
-          parents[i] = units[units.length-1-i].getGenome();
+          parents[i] = units[i];
         }
         return parents;
-
-
-        // return new double[][] { units[units.length - 1].getGenome(), units[units.length - 2].getGenome() };
-
-
-    }
-
-    public Unit[] selectParent()
-    {
-        sort();
-        return new Unit[] { units[0] };
     }
 
     public void mutate(Random rnd, double factor)
@@ -136,7 +124,7 @@ public class Population
 
     public void print()
     {
-        System.out.println("--PRINTING POPULATION--");
+//        System.out.println("--PRINTING POPULATION--");
         for (int i = 0; i < units.length; i++)
         {
             System.out.println(units[i]);
