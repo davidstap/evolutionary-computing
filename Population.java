@@ -4,6 +4,7 @@ import java.util.function.Function;
 
 public class Population
 {
+
     private static final int dim = 10;
 
     private Population.Unit[] units;
@@ -37,7 +38,8 @@ public class Population
         {
             for (int k = 0; k < N[j]; k++)
             {
-                units[i] = this.new Unit(parents[j].getGenome());
+                units[i] = this.new Unit(
+                        parents[j].getGenome(), parents[j].getSigmas());
                 i++;
             }
         }
@@ -76,19 +78,12 @@ public class Population
     public double[][] selectParents(int n )
     {
         sort();
-
-        double[][] parents = new double[n][units[0].getGenome().length];
-
-        for (int i=0; i<n; i++)
+        double[][] parents = new double[n][dim];
+        for (int i = 0; i < n; i++)
         {
-          parents[i] = units[units.length-1-i].getGenome();
+          parents[i] = units[i].getGenome();
         }
         return parents;
-
-
-        // return new double[][] { units[units.length - 1].getGenome(), units[units.length - 2].getGenome() };
-
-
     }
 
     public Unit[] selectParent()
@@ -97,21 +92,36 @@ public class Population
         return new Unit[] { units[0] };
     }
 
-    public void mutate(Random rnd, double factor)
+    public void mutate(Random rnd)
     {
         for (Unit unit : units)
         {
-            unit.mutate(1.0, rnd, factor);
+            unit.mutate(rnd);
         }
+    }
+
+    public void survival_mu_plus_lambda(Population childPopulation)
+    {
+        Unit[] parentUnits = getUnits();
+        Unit[] childUnits = childPopulation.getUnits();
+        
+        units = new Unit[parentUnits.length + childUnits.length];
+        for (int i = 0; i < parentUnits.length; i++)
+        {
+            units[i] = parentUnits[i];
+        }
+        for (int i = 0; i < childUnits.length; i++)
+        {
+            units[parentUnits.length + i] = childUnits[i];
+        }
+        sort();
+        
+        units = Arrays.copyOfRange(units, 0, parentUnits.length);
     }
 
     public void survival(Population childPopulation)
     {
-        Unit[] childUnits = childPopulation.getUnits();
-        for (int i = 0; i < childUnits.length; i++)
-        {
-            units[i] = childUnits[i];
-        }
+        survival_mu_plus_lambda(childPopulation);
     }
 
     public double getMaxFitness()
@@ -136,7 +146,7 @@ public class Population
 
     public void print()
     {
-        System.out.println("--PRINTING POPULATION--");
+        System.out.println();
         for (int i = 0; i < units.length; i++)
         {
             System.out.println(units[i]);
@@ -151,24 +161,22 @@ public class Population
         public static final double R = maxR - minR;
 
         private double[] genome;
-//        private double[] sigmas;
+        private double[] sigmas;
         public double fitness;
-
-        private void init()
-        {
-            fitness = 0.0;
-        }
 
         public Unit(Random rnd)
         {
-            init();
+            fitness = 0.0;
             genome = Mutation.normal(new double[dim], rnd, R, minR, maxR, 1);
+            sigmas = new double[dim];
+            Arrays.fill(sigmas, 1.0);
         }
 
-        public Unit(double[] genome_)
+        public Unit(double[] genome_, double[] sigmas_)
         {
-            init();
+            fitness = 0.0;
             genome = genome_;
+            sigmas = sigmas_;
         }
 
         public double[] getGenome()
@@ -176,25 +184,34 @@ public class Population
             return genome.clone();
         }
 
-        public void mutate(double pMutate, Random rnd, double factor)
+        public double[] getSigmas()
         {
-            for (int i = 0; i < genome.length; i++)
-            {
-                if (pMutate > rnd.nextDouble()) {
-                    genome[i] = Mutation.normal_(
-                            genome[i], rnd, factor, minR, maxR);
-                }
-            }
+            return sigmas.clone();
+        }
+
+        public void mutate(Random rnd)
+        {
+            double[][] res = Mutation.uncorrelated(
+                    getGenome(), getSigmas(), rnd, minR, maxR);
+            genome = res[0];
+            sigmas = res[1];
+        }
+
+        private double round(double v, int n)
+        {
+            return Math.round(v * Math.pow(10, n)) / Math.pow(10, n);
         }
 
         public String toString()
         {
             String s = Double.toString(
-                    Math.round(fitness * 1e3) / 1e3) + " [";
-            for (int i = 0; i < genome.length; i++)
+                    fitness)
+                    + " [";
+            for (int i = 0; i < genome.length/2; i++)
             {
-                s += Double.toString(
-                        Math.round(genome[i] * 1e2) / 1e2) + ", ";
+                s += "(" + Double.toString(genome[i]) +
+                    ", " + Double.toString(sigmas[i]) +
+                    "), ";
             }
             return s.substring(0, s.length() - 2) + "]";
         }
@@ -204,5 +221,7 @@ public class Population
         {
             return Double.compare(fitness, unit.fitness);
         }
+
     }
+
 }

@@ -67,10 +67,11 @@ public class player15 implements ContestSubmission
     {
         // Run your algorithm here
 
+        boolean print = false;
+
         int evals = 0;
-        int popSize = 4;
-        int nChildren = popSize;
-        double mutationFactor = .1;
+        int popSize = 10;
+        int nChildren = popSize / 2;
         evaluations_limit_ = 10000;
 
         // init population
@@ -81,13 +82,19 @@ public class player15 implements ContestSubmission
             // calculate fitness
             while(evals < evaluations_limit_){
 
+                if (print == true)
+                {
+                    myPop.sort();
+                    myPop.print();
+                }
+
                 Population.Unit[] parents = myPop.selectParent();
 
                 int[] N = {nChildren};
                 Population chPop = new Population(
                         parents, N, evaluation_::evaluate, rnd_);
 
-                chPop.mutate(rnd_, mutationFactor);
+                chPop.mutate(rnd_);
 
                 evals = chPop.evaluate(evals, evaluations_limit_);
 
@@ -95,5 +102,13 @@ public class player15 implements ContestSubmission
 
             }
         }
+
+        if (print == true)
+        {
+            myPop.sort();
+            myPop.print();
+            System.out.println();
+        }
+
     }
 }
