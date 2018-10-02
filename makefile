@@ -1,7 +1,7 @@
 INFO := MainClass.txt
 FILE := $(lastword $(shell cat $(INFO)))
 
-FILES := Mutation Population Recombination $(FILE)
+FILES := $(FILE) Mutation Population #Recombination
 JFILES := $(patsubst %,%.java,$(FILES))
 NESTCS := $(foreach file,$(FILES),$(wildcard $(file)$$*.class))
 CFILES := $(subst $$,\$$,$(patsubst %,%.class,$(FILES)) $(NESTCS))
@@ -18,7 +18,7 @@ submission:
 	jar cmf $(INFO) submission.jar $(CFILES)
 
 test:
-	make -s testo
+#	make -s testo
 	make -s testc
 	make -s testk
 	make -s tests
@@ -39,4 +39,4 @@ tests:
 	java -jar testrun.jar -submission=$(FILE) -evaluation=SchaffersEvaluation -seed=1
 
 clean:
-	rm -r *~ submission.jar tmp $(CFILES)
+	rm -rf *~ submission.jar tmp $(CFILES)

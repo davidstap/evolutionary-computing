@@ -1,3 +1,5 @@
+import java.util.Random;
+
 public class Recombination
 {
     private double[][] parents;
@@ -119,4 +121,3 @@ public class Recombination
 
 }
 
-}

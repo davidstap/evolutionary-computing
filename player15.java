@@ -35,15 +35,17 @@ public class player15 implements ContestSubmission
         // Get evaluation properties
         Properties props = evaluation.getProperties();
 
+        /*
         Set keys = props.keySet();
         Iterator itr = keys.iterator();
         String propStr;
         System.out.println(" Properties:");
-        // while (itr.hasNext()){
-        //     propStr = (String)itr.next();
-        //     System.out.println(" -- | " + propStr +
-        //             " = " + props.getProperty(propStr));
-        // }
+        while (itr.hasNext()){
+            propStr = (String)itr.next();
+            System.out.println(" -- | " + propStr +
+                    " = " + props.getProperty(propStr));
+        }
+        */
 
         // Get evaluation limit
         evaluations_limit_ = Integer.parseInt(props.getProperty("Evaluations"));
@@ -67,32 +69,31 @@ public class player15 implements ContestSubmission
 
         int evals = 0;
         int popSize = 4;
+        int nChildren = popSize;
         double mutationFactor = .1;
-//        evaluations_limit_ = 10000;
+        evaluations_limit_ = 10000;
 
         // init population
         Population myPop = new Population(popSize, evaluation_::evaluate, rnd_);
-//        myPop.print();
+        evals = myPop.evaluate(evals, evaluations_limit_);
 
-        // calculate fitness
-        while(evals<evaluations_limit_){    //XXX
-            // Select parents
-            evals = myPop.evaluate(evals, evaluations_limit_);
-            if (evals == evaluations_limit_) { break; }
-//            myPop.print();
+        if (myPop.size() == popSize) {
+            // calculate fitness
+            while(evals < evaluations_limit_){
 
-            Population.Unit[] parents = myPop.selectParent();
+                Population.Unit[] parents = myPop.selectParent();
 
-            // Apply crossover / mutation operators
-            Population.Unit child = parents[0];
+                int[] N = {nChildren};
+                Population chPop = new Population(
+                        parents, N, evaluation_::evaluate, rnd_);
 
-            // Check fitness of unknown fuction
-//            System.out.println("evals> " + Double.toString(evals));
+                chPop.mutate(rnd_, mutationFactor);
 
-            // Select survivors
-            myPop.evolve(child, rnd_, mutationFactor);
+                evals = chPop.evaluate(evals, evaluations_limit_);
+
+                myPop.survival(chPop);
+
+            }
         }
-//        myPop.print();
-        Double fitness = myPop.getMaxFitness();
     }
 }
