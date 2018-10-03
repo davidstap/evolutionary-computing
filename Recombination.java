@@ -8,23 +8,23 @@ public class Recombination
 
     private double probability = 0.5;
 
-    private Population.Unit[] children;
+    private Population.Individual[] children;
 
     private Population childPop;
 
-    public Recombination(Population.Unit[] parents)
+    public Recombination(Population.Individual[] parents)
     {
         if ((parents.length & 1) == 0)
         {
-            double[][] units = new double[parents.length][parents[0].getGenome().length];
+            double[][] individuals = new double[parents.length][parents[0].getGenome().length];
             int i = 0;
-            for (Population.Unit parent : parents)
+            for (Population.Individual parent : parents)
             {
-                units[i] = parent.getGenome();
+                individuals[i] = parent.getGenome();
                 i++;
             }
-            this.parents = units;
-            this.children = new Population.Unit[parents.length];
+            this.parents = individuals;
+            this.children = new Population.Individual[parents.length];
             this.childPop = new Population();
         }
         else 
@@ -35,7 +35,7 @@ public class Recombination
     }
 
 
-    public Population.Unit[] discreteRecombination()
+    public Population.Individual[] discreteRecombination()
     {
       // Mutate and add to children
       double[][] childGenomes = new double[parents.length][parents[0].length];
@@ -58,19 +58,16 @@ public class Recombination
             childGenomes[j+1][i] = parents[j][i];
           }
         }
-        // System.out.print(j);
-        // System.out.println(j+1);
-        // Add to children Unit
-        children[j] = childPop.new Unit(childGenomes[j]);
-        children[j+1] = childPop.new Unit(childGenomes[j+1]);
-        // children[j+1] = childPop.new Unit(child2[j])
+        // Add to children Individual
+        children[j] = childPop.new Individual(childGenomes[j]);
+        children[j+1] = childPop.new Individual(childGenomes[j+1]);
       }
       return children;
     }
 
 
 
-    public Population.Unit[] simpleArithmetic()
+    public Population.Individual[] simpleArithmetic()
     {
         double[][] childGenomes = new double[parents.length][parents[0].length];
 
@@ -96,9 +93,9 @@ public class Recombination
                 }
 
             }
-            // Add to children Unit
-            children[j] = childPop.new Unit(childGenomes[j]);
-            children[j+1] = childPop.new Unit(childGenomes[j+1]);
+            // Add to children Individual
+            children[j] = childPop.new Individual(childGenomes[j]);
+            children[j+1] = childPop.new Individual(childGenomes[j+1]);
         }
 
         return children;
@@ -110,7 +107,7 @@ public class Recombination
 
     }
 
-    public Population.Unit[] singleArithmeticRecom()
+    public Population.Individual[] singleArithmeticRecom()
     {   
         // Mutate and add to children
         double[][] childGenomes = new double[parents.length][parents[0].length];
@@ -142,15 +139,15 @@ public class Recombination
                 }
 
             }
-            // Add to children Unit
-            children[j] = childPop.new Unit(childGenomes[j]);
-            children[j+1] = childPop.new Unit(childGenomes[j+1]);
+            // Add to children Individual
+            children[j] = childPop.new Individual(childGenomes[j]);
+            children[j+1] = childPop.new Individual(childGenomes[j+1]);
         }
         return children;
     }
 
 
-    public Population.Unit[] wholeArithmeticRecom()
+    public Population.Individual[] wholeArithmeticRecom()
     {
         // Mutate and add to children
         double[][] childGenomes = new double[parents.length][parents[0].length];
@@ -165,9 +162,9 @@ public class Recombination
                 childGenomes[j+1][i] = arithmeticFunction(parents[j][i], parents[j+1][i]);
 
             }
-            // Add to children Unit
-            children[j] = childPop.new Unit(childGenomes[j]);
-            children[j+1] = childPop.new Unit(childGenomes[j+1]);
+            // Add to children Individual
+            children[j] = childPop.new Individual(childGenomes[j]);
+            children[j+1] = childPop.new Individual(childGenomes[j+1]);
         }
         return children;
     }

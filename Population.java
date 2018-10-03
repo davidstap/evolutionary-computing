@@ -6,7 +6,7 @@ public class Population
 {
     private static final int dim = 10;
 
-    private Population.Unit[] units;
+    private Population.Individual[] individuals;
     private Function<double[], Object> evaluationFunction;
 
     public Population()
@@ -17,16 +17,16 @@ public class Population
             int size, Function<double[], Object> evaluationFunction_,
             Random rnd)
     {
-        units = new Unit[size];
+        individuals = new Individual[size];
         for (int i = 0; i < size; i++)
         {
-            units[i] = this.new Unit(rnd);
+            individuals[i] = this.new Individual(rnd);
         }
         evaluationFunction = evaluationFunction_;
     }
 
     public Population(
-            Unit[] parents, int[] N,
+            Individual[] parents, int[] N,
             Function<double[], Object> evaluationFunction_, Random rnd)
     {
         int i = 0;
@@ -34,14 +34,14 @@ public class Population
         {
             i += n;
         }
-        units = new Unit[i];
+        individuals = new Individual[i];
         
         i = 0;
         for (int j = 0; j < N.length; j++)
         {
             for (int k = 0; k < N[j]; k++)
             {
-                units[i] = this.new Unit(parents[j].getGenome());
+                individuals[i] = this.new Individual(parents[j].getGenome());
                 i++;
             }
         }
@@ -49,93 +49,93 @@ public class Population
         evaluationFunction = evaluationFunction_;
     }
 
-    public Unit[] getUnits()
+    public Individual[] getIndividuals()
     {
-        return units.clone();
+        return individuals.clone();
     }
 
     public int evaluate(int evals, int evaluations_limit)
     {
-        for (int i = 0; i < units.length; i++)
+        for (int i = 0; i < individuals.length; i++)
         {
             if (evals >= evaluations_limit)
             {
                 if (i == 0)
                 {
-                    units = new Unit[0];
+                    individuals = new Individual[0];
                 }
                 else
                 {
-                    units = Arrays.copyOfRange(units, 0, i);
+                    individuals = Arrays.copyOfRange(individuals, 0, i);
                 }
                 break;
             }
-            units[i].fitness = (double) evaluationFunction.apply(
-                    units[i].getGenome());
+            individuals[i].fitness = (double) evaluationFunction.apply(
+                    individuals[i].getGenome());
             evals++;
         }
         return evals;
     }
 
-    public Unit[] selectParents(int n )
+    public Individual[] selectParents(int n )
     {
         sort();
-        Unit[] parents = new Unit[n];
+        Individual[] parents = new Individual[n];
 
         for (int i=0; i<n; i++)
         {
-          parents[i] = units[i];
+          parents[i] = individuals[i];
         }
         return parents;
     }
 
     public void mutate(Random rnd, double factor)
     {
-        for (Unit unit : units)
+        for (Individual individual : individuals)
         {
-            unit.mutate(1.0, rnd, factor);
+            individual.mutate(1.0, rnd, factor);
         }
     }
 
     public void survival(Population childPopulation)
     {
-        Unit[] childUnits = childPopulation.getUnits();
-        for (int i = 0; i < childUnits.length; i++)
+        Individual[] childIndividuals = childPopulation.getIndividuals();
+        for (int i = 0; i < childIndividuals.length; i++)
         {
-            units[i] = childUnits[i];
+            individuals[i] = childIndividuals[i];
         }
     }
 
     public double getMaxFitness()
     {
-        if (units.length > 0)
+        if (individuals.length > 0)
         {
             sort();
-            return units[0].fitness;
+            return individuals[0].fitness;
         }
         return 0.0;
     }
 
     public void sort()
     {
-        Arrays.sort(units, (u1, u2) -> Double.compare(u2.fitness, u1.fitness));
+        Arrays.sort(individuals, (u1, u2) -> Double.compare(u2.fitness, u1.fitness));
     }
 
     public int size()
     {
-        return units.length;
+        return individuals.length;
     }
 
     public void print()
     {
 //        System.out.println("--PRINTING POPULATION--");
-        for (int i = 0; i < units.length; i++)
+        for (int i = 0; i < individuals.length; i++)
         {
-            System.out.println(units[i]);
+            System.out.println(individuals[i]);
         }
     }
 
-    public class Unit implements Comparable<Unit>
+    public class Individual implements Comparable<Individual>
     {
 
         public static final double minR = -5.0;
@@ -151,13 +151,13 @@ public class Population
             fitness = 0.0;
         }
 
-        public Unit(Random rnd)
+        public Individual(Random rnd)
         {
             init();
             genome = Mutation.normal(new double[dim], rnd, R, minR, maxR, 1);
         }
 
-        public Unit(double[] genome_)
+        public Individual(double[] genome_)
         {
             init();
             genome = genome_;
@@ -192,9 +192,9 @@ public class Population
         }
 
         @Override
-        public int compareTo(Unit unit)
+        public int compareTo(Individual individual)
         {
-            return Double.compare(fitness, unit.fitness);
+            return Double.compare(fitness, individual.fitness);
         }
     }
 }

@@ -67,8 +67,8 @@ public class player15 implements ContestSubmission
     {
         // EA Parameters
         int evals = 0;
-        int popSize = 4;
-        int nChildren = popSize;
+        int popSize = 60;
+        int nChildren = 30;
         double mutationFactor = .1;
         evaluations_limit_ = 10000;
 
@@ -83,14 +83,12 @@ public class player15 implements ContestSubmission
             while(evals < evaluations_limit_){            
                 // TODO: add other selection methods (instead of deterministic fitness based)
                 // ---------- Parent Selection ----------
-                Population.Unit[] parents = myPop.selectParents(4);
+                Population.Individual[] parents = myPop.selectParents(4);
                 
-                // TODO: should work for any number of parents (not just 2). Fixed for discreteRecombination. rest should follow.
                 // ---------- Recombination ----------
                 // choose: discreteRecombination, simpleArithmetic, singleArithmeticRecom, wholeArithmeticRecom
                 Recombination recomb = new Recombination(parents);                
-                Population.Unit[] recombChildren = recomb.singleArithmeticRecom();
-                
+                Population.Individual[] recombChildren = recomb.wholeArithmeticRecom();
                 
                 Population childPop = new Population(recombChildren, N, evaluation_::evaluate, rnd_);
 

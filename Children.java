@@ -11,13 +11,13 @@ public class Children
         this.pop = new Population();
     }
 
-    public Population.Unit getChild1()
+    public Population.Individual getChild1()
     {
-    	return pop.new Unit(child1);
+    	return pop.new Individual(child1);
     }
 
-	public Population.Unit getChild2()
+	public Population.Individual getChild2()
     {
-    	return pop.new Unit(child2);
+    	return pop.new Individual(child2);
     }
 }
