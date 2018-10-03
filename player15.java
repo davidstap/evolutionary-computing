@@ -76,29 +76,31 @@ public class player15 implements ContestSubmission
         Population myPop = new Population(popSize, evaluation_::evaluate, rnd_);
         evals = myPop.evaluate(evals, evaluations_limit_);
 
+        int[] N = {nChildren};
+
         if (myPop.size() == popSize) {
             // calculate fitness
             while(evals < evaluations_limit_){            
                 // TODO: add other selection methods (instead of deterministic fitness based)
                 // ---------- Parent Selection ----------
-                Population.Unit[] parents = myPop.selectParents(2);
+                Population.Unit[] parents = myPop.selectParents(4);
                 
-                // TODO: should work for any number of parents (not just 2)
+                // TODO: should work for any number of parents (not just 2). Fixed for discreteRecombination. rest should follow.
                 // ---------- Recombination ----------
                 // choose: discreteRecombination, simpleArithmetic, singleArithmeticRecom, wholeArithmeticRecom
-                Recombination recomb = new Recombination(parents);
-                Children children = recomb.discreteRecombination();
-                Population.Unit[] recomb_children = {children.getChild1(), children.getChild2()};
-                int[] N = {nChildren};
-                Population chPop = new Population(recomb_children, N, evaluation_::evaluate, rnd_);
+                Recombination recomb = new Recombination(parents);                
+                Population.Unit[] recombChildren = recomb.discreteRecombination();
+                
+                
+                Population childPop = new Population(recombChildren, N, evaluation_::evaluate, rnd_);
 
                 // ---------- Mutation ----------  
-                chPop.mutate(rnd_, mutationFactor);
+                childPop.mutate(rnd_, mutationFactor);
 
                 // TODO: add several survival mechanisms
                 // ---------- Survivor selection
-                evals = chPop.evaluate(evals, evaluations_limit_);
-                myPop.survival(chPop);
+                evals = childPop.evaluate(evals, evaluations_limit_);
+                myPop.survival(childPop);
             }
         }
     }
