@@ -69,12 +69,18 @@ public class player15 implements ContestSubmission
 
         boolean print = false;
 
+        // EA Parameters
         int evals = 0;
         int popSize = 10;
+        int nParents = popSize / 2;
+        // 2 parents produce 2 children
         int nChildren = popSize / 2;
+        // Roulette wheel parameter S. Range: 1.0 < s ≤ 2.0
+        double sRW = 2.0;
+
         evaluations_limit_ = 10000;
 
-        // init population
+        // Initialize population
         Population myPop = new Population(popSize, evaluation_::evaluate, rnd_);
         evals = myPop.evaluate(evals, evaluations_limit_);
 
@@ -88,17 +94,31 @@ public class player15 implements ContestSubmission
                     myPop.print();
                 }
 
-                Population.Unit[] parents = myPop.selectParent();
+                // TODO: add tournament selection
+                // ---------- Parent Selection ----------
+                Population.Individual[] parents =
+                        myPop.parentSelectionGreedy(nChildren);
+//                Population.Individual[] parents =
+//                        myPop.parentSelectionRouletteWheel(nChildren, sRW);
 
+                // ---------- Recombination ----------
+                // choose: discreteRecombination, simpleArithmetic, singleArithmeticRecom, wholeArithmeticRecom
                 int[] N = {nChildren};
-                Population chPop = new Population(
+//                Recombination recomb = new Recombination(parents);
+//                Population.Individual[] recombChildren =
+//                        recomb.wholeArithmeticRecom();
+                Population childPop = new Population(
+//                        recomb, N, evaluation_::evaluate, rnd_);
                         parents, N, evaluation_::evaluate, rnd_);
 
-                chPop.mutate(rnd_);
+                // ---------- Mutation ----------  
+                childPop.mutate(rnd_);
 
-                evals = chPop.evaluate(evals, evaluations_limit_);
+                evals = childPop.evaluate(evals, evaluations_limit_);
 
-                myPop.survival(chPop);
+                // TODO: add several survival mechanisms
+                // ---------- Survivor selection
+                myPop.survival(childPop);
 
             }
         }

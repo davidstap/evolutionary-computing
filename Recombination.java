@@ -8,59 +8,96 @@ public class Recombination
 
     private double probability = 0.5;
 
-    public Recombination(double[][] parents)
+    private Population.Individual[] children;
+
+    private Population childPop;
+
+    public Recombination(Population.Individual[] parents)
     {
-        this.parents = parents;
+        if ((parents.length & 1) == 0)
+        {
+            double[][] individuals = new double[parents.length][parents[0].getGenome().length];
+            int i = 0;
+            for (Population.Individual parent : parents)
+            {
+                individuals[i] = parent.getGenome();
+                i++;
+            }
+            this.parents = individuals;
+            this.children = new Population.Individual[parents.length];
+            this.childPop = new Population();
+        }
+        else 
+        {
+            System.out.println("Parents length must be an even number!");
+        }
+
     }
 
-    public double[] discreteRecombination()
-    {
-      double[] child1 = new double[parents[0].length];
-      double[] child2 = new double[parents[0].length];
 
-      for (int i=0; i<parents[0].length; i++)
+    public Population.Individual[] discreteRecombination()
+    {
+      // Mutate and add to children
+      double[][] childGenomes = new double[parents.length][parents[0].length];
+      
+      // Parent loop
+      for (int j=0; j<parents.length; j+=2)
       {
-        double random = Math.random();
-        if (random > 0.5)
+        // Genome loop
+        for (int i=0; i<parents[0].length; i++)
         {
-          child1[i] = parents[0][i];
-          child2[i] = parents[1][i];
+          double random = Math.random();
+          if (random > 0.5)
+          {
+            childGenomes[j][i] = parents[j][i];
+            childGenomes[j+1][i] = parents[j+1][i];
+          }
+          else
+          {
+            childGenomes[j][i] = parents[j+1][i];
+            childGenomes[j+1][i] = parents[j][i];
+          }
         }
-        else
-        {
-          child1[i] = parents[1][i];
-          child2[i] = parents[0][i];
-        }
+        // Add to children Individual
+        children[j] = childPop.new Individual(childGenomes[j]);
+        children[j+1] = childPop.new Individual(childGenomes[j+1]);
       }
-
-      return child1;
+      return children;
     }
 
 
-    //TODO: simple arithmetic recombination (p65)
-    public Children simpleArithmetic()
-    {
-        double[] child1 = new double[parents[0].length];
-        double[] child2 = new double[parents[1].length];
 
+    public Population.Individual[] simpleArithmetic()
+    {
+        double[][] childGenomes = new double[parents.length][parents[0].length];
+
+        // Get random number
         Random rand = new Random();
         int k = rand.nextInt(10);
-        for (int i=0; i < parents[0].length; i++)
-        {
-            if (i < k)
-            {
-                child1[i] = parents[0][i];
-                child2[i] = parents[1][i];
-            }
-            else
-            {
-                // Verander in 1
-                child1[i] = arithmeticFunction(parents[0][i], parents[1][i]);
-                child2[i] = arithmeticFunction(parents[0][i], parents[1][i]);
-            }
 
+        // Parent loop
+        for (int j=0; j < parents.length; j+=2)
+        {
+            // Genome loop
+            for (int i=0; i < parents[0].length; i++)
+            {
+                if (i < k)
+                {
+                    childGenomes[j][i] = parents[j][i];
+                    childGenomes[j+1][i] = parents[j+1][i];
+                }
+                else
+                {
+                    childGenomes[j][i] = arithmeticFunction(parents[j][i], parents[j+1][i]);
+                    childGenomes[j+1][i] = arithmeticFunction(parents[j][i], parents[j+1][i]);
+                }
+
+            }
+            // Add to children Individual
+            children[j] = childPop.new Individual(childGenomes[j]);
+            children[j+1] = childPop.new Individual(childGenomes[j+1]);
         }
-        Children children = new Children(child1, child2);
+
         return children;
     }
 
@@ -70,52 +107,65 @@ public class Recombination
 
     }
 
-    //TODO: arithmetic recombination (p66)
-    public Children singleArithmeticRecom()
+    public Population.Individual[] singleArithmeticRecom()
     {   
-        double[] child1 = new double[parents[0].length];
-        double[] child2 = new double[parents[1].length];
+        // Mutate and add to children
+        double[][] childGenomes = new double[parents.length][parents[0].length];
+
+        // Get random number        
         int k = rand.nextInt(10);
-        for (int i=0; i < parents[0].length; i++)
+
+        // Parent loop
+        for (int j=0; j < parents.length; j+=2)
         {
-            double prob = rand.nextDouble();
-            if (i == k)
+            // Genome loop
+            for (int i=0; i < parents[0].length; i++)
             {
-                child1[i] = arithmeticFunction(parents[0][i], parents[1][i]);
-                child2[i] = arithmeticFunction(parents[0][i], parents[1][i]);
-            }
-            else if (prob > probability)
-            {
-                child1[i] = parents[0][i];
-                child2[i] = parents[1][i];
-            }
-            else
-            {
-                child1[i] = parents[1][i];
-                child2[i] = parents[0][i];
-            }
+                double prob = rand.nextDouble();
+                if (i == k)
+                {
+                    childGenomes[j][i] = arithmeticFunction(parents[j][i], parents[j+1][i]);
+                    childGenomes[j+1][i] = arithmeticFunction(parents[j][i], parents[j+1][i]);
+                }
+                else if (prob > probability)
+                {
+                    childGenomes[j][i] = parents[j][i];
+                    childGenomes[j+1][i] = parents[j+1][i];
+                }
+                else
+                {
+                    childGenomes[j][i] = parents[j+1][i];
+                    childGenomes[j+1][i] = parents[j][i];
+                }
 
+            }
+            // Add to children Individual
+            children[j] = childPop.new Individual(childGenomes[j]);
+            children[j+1] = childPop.new Individual(childGenomes[j+1]);
         }
-        Children children = new Children(child1, child2);
-
         return children;
     }
 
 
-    //TODO: whole arithmetic recombination (p66)
-    public Children wholeArithmeticRecom()
+    public Population.Individual[] wholeArithmeticRecom()
     {
-        double[] child1 = new double[parents[0].length];
-        double[] child2 = new double[parents[1].length];
+        // Mutate and add to children
+        double[][] childGenomes = new double[parents.length][parents[0].length];
 
-        for (int i=0; i < parents[0].length; i++)
+        // Parent loop
+        for (int j=0; j < parents.length; j+=2)
         {
-            child1[i] = arithmeticFunction(parents[0][i], parents[1][i]);
-            child2[i] = arithmeticFunction(parents[0][i], parents[1][i]);
+            // Genome loop
+            for (int i=0; i < parents[0].length; i++)
+            {
+                childGenomes[j][i] = arithmeticFunction(parents[j][i], parents[j+1][i]);
+                childGenomes[j+1][i] = arithmeticFunction(parents[j][i], parents[j+1][i]);
 
+            }
+            // Add to children Individual
+            children[j] = childPop.new Individual(childGenomes[j]);
+            children[j+1] = childPop.new Individual(childGenomes[j+1]);
         }
-        Children children = new Children(child1, child2);
-
         return children;
     }
 
