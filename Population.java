@@ -5,15 +5,19 @@ import java.util.function.Function;
 public class Population
 {
 
+    // Genome length.
     private static final int dim = 10;
 
     private Population.Individual[] individuals;
     private Function<double[], Object> evaluationFunction;
 
+    // XXX should probably be temporary?
     public Population()
     {
     }
 
+    // Create population of given size using given evaluation-function
+    // and random number generator.
     public Population(
             int size, Function<double[], Object> evaluationFunction_,
             Random rnd)
@@ -26,10 +30,13 @@ public class Population
         evaluationFunction = evaluationFunction_;
     }
 
+    // Create population of n (<- N) copies of each given parent.
+    // Uses given evaluation function and random number generator.
     public Population(
             Individual[] parents, int[] N,
             Function<double[], Object> evaluationFunction_, Random rnd)
     {
+        // Count total population size.
         int i = 0;
         for (int n : N)
         {
@@ -37,6 +44,7 @@ public class Population
         }
         individuals = new Individual[i];
         
+        // Create copies of parents.
         i = 0;
         for (int j = 0; j < N.length; j++)
         {
@@ -51,17 +59,23 @@ public class Population
         evaluationFunction = evaluationFunction_;
     }
 
+    // Returns copied list of individuals in population.
     public Individual[] getIndividuals()
     {
         return individuals.clone();
     }
 
+    // Evaluates members of population keeping track of number of total
+    // evaluations, returns new total number of evaluations. If evaluations
+    // limit is exceeded, deletes not-evaluated individuals from population.
     public int evaluate(int evals, int evaluations_limit)
     {
         for (int i = 0; i < individuals.length; i++)
         {
+            // Check for exceeding of evaluations limit.
             if (evals >= evaluations_limit)
             {
+                // Discard not-evaluated part of population.
                 if (i == 0)
                 {
                     individuals = new Individual[0];
@@ -72,6 +86,7 @@ public class Population
                 }
                 break;
             }
+            // Evaluate individual.
             individuals[i].fitness = (double) evaluationFunction.apply(
                     individuals[i].getGenome());
             evals++;
@@ -79,20 +94,14 @@ public class Population
         return evals;
     }
 
-    // Selects n best individuals as parents
+    // Selects n best individuals as parents.
     public Individual[] parentSelectionGreedy(int n)
     {
         sort();
-        Individual[] parents = new Individual[n];
-
-        for (int i=0; i<n; i++)
-        {
-          parents[i] = individuals[i];
-        }
-        return parents;
+        return Arrays.copyOfRange(individuals, 0, n);
     }
     
-    // Selects n parents based on Roulette Wheel and ranking selection
+    // Selects n parents based on Roulette Wheel and ranking selection.
     public Individual[] parentSelectionRouletteWheel(int n, double s)
     {
       sort();
@@ -109,11 +118,13 @@ public class Population
         double r = rnd.nextDouble();
         int i = 0;
         double a_i = individuals[0].selectionRanking;
-        // stop when cumulative probability exceeds r, then use i for individual.
+        
+        // stop when cumulative probability exceeds r,
+        // then use i for individual.
         while (a_i < r)
         {
           i+=1;
-          // Update cumulative probability distribution
+          // Update cumulative probability distribution.
           a_i += individuals[i].selectionRanking;
         }
         parents[j] = individuals[i];
@@ -121,8 +132,10 @@ public class Population
       return parents;
     }
     
-    // Adds to every member of population the correct rank (based on fitness score)
-    // lowest rank = 0, highest rank = mu-1
+    // Adds to every member of population the correct rank
+    // (based on fitness score).
+    // Lowest rank = 0
+    // Highest rank = mu-1
     // assumption: population is sorted before setRanks() is called
     private void setRanks()
     {
@@ -136,19 +149,21 @@ public class Population
       }
     }
     
-    // Adds correct value for selectionRank to every individual in population
+    // Adds correct value for selectionRank to every individual in population.
     private void setSelectionRank(double s)
     {
       for (int i=0; i<individuals.length; i++)
       {
         // formula for selectionRank (see book p82)
         double mu = (double) individuals.length;
-        double sr = (2.0-s)/(mu) + (2.0*individuals[i].rank*(s-1))/(mu*(mu-1.0));
+        double sr = (2.0-s)/(mu) + (2.0*individuals[i].rank*(s-1)) /
+                (mu*(mu-1.0));
         // System.out.println(sr);
         individuals[i].selectionRanking = sr;
       }
     }
 
+    // Mutates all individuals in the population.
     public void mutate(Random rnd)
     {
         for (Individual individual : individuals)
@@ -157,11 +172,15 @@ public class Population
         }
     }
 
+    // Survival selection (mu + sigma).
+    // Picks best individuals from entire pool of parents + children
+    // and sets them as the new population.
     public void survival_mu_plus_lambda(Population childPopulation)
     {
         Individual[] parentIndividuals = getIndividuals();
         Individual[] childIndividuals = childPopulation.getIndividuals();
         
+        // Create pool of parents and children.
         individuals = new Individual[
                 parentIndividuals.length + childIndividuals.length];
         for (int i = 0; i < parentIndividuals.length; i++)
@@ -172,17 +191,20 @@ public class Population
         {
             individuals[parentIndividuals.length + i] = childIndividuals[i];
         }
-        sort();
         
+        // Set best individuals as new population.
+        sort();
         individuals = Arrays.copyOfRange(
                 individuals, 0, parentIndividuals.length);
     }
 
+    // Applies survival selection onto population.
     public void survival(Population childPopulation)
     {
         survival_mu_plus_lambda(childPopulation);
     }
 
+    // Returns maximal fitness value found in the population.
     public double getMaxFitness()
     {
         if (individuals.length > 0)
@@ -193,6 +215,7 @@ public class Population
         return 0.0;
     }
 
+    // Sorts population from largest fitness value to smallest.
     public void sort()
     {
         Arrays.sort(individuals, (i1, i2) -> Double.compare(
@@ -213,9 +236,11 @@ public class Population
         }
     }
 
+    // Subclass to contain one individual of the population.
     public class Individual implements Comparable<Individual>
     {
 
+        // Ranges in which genome values fall.
         public static final double minR = -5.0;
         public static final double maxR = 5.0;
         public static final double R = maxR - minR;
@@ -230,6 +255,7 @@ public class Population
         public int rank;
         
 
+        // Basic setting of default variables.
         private void init()
         {
             fitness = 0.0;
@@ -237,6 +263,8 @@ public class Population
             rank = 0;
         }
 
+        // Creates individual with random genome and default sigma values
+        // (filled with 1's).
         public Individual(Random rnd)
         {
             init();
@@ -245,7 +273,7 @@ public class Population
             Arrays.fill(sigmas, 1.0);
         }
 
-        // TODO ONLY TEMPORARY TO GET RID OF ERRORS
+        // FIXME ONLY TEMPORARY TO GET RID OF ERRORS
         public Individual(double[] genome_)
         {
             init();
@@ -254,6 +282,7 @@ public class Population
             Arrays.fill(sigmas, 1.0);
         }
 
+        // Creates individual with given genome and sigma values.
         public Individual(double[] genome_, double[] sigmas_)
         {
             init();
@@ -261,16 +290,19 @@ public class Population
             sigmas = sigmas_;
         }
 
+        // Returns clone of individuals genome.
         public double[] getGenome()
         {
             return genome.clone();
         }
 
+        // Returns clone of individuals sigma values.
         public double[] getSigmas()
         {
             return sigmas.clone();
         }
 
+        // Applies mutation on individual.
         public void mutate(Random rnd)
         {
             double[][] res = Mutation.uncorrelated(
@@ -279,6 +311,7 @@ public class Population
             sigmas = res[1];
         }
 
+        // Rounds value v on n decimals.
         private double round(double v, int n)
         {
             return Math.round(v * Math.pow(10, n)) / Math.pow(10, n);

@@ -72,7 +72,7 @@ public class player15 implements ContestSubmission
         // EA Parameters
         int evals = 0;
         int popSize = 10;
-        int nParents = popSize / 2;
+//        int nParents = popSize / 2;
         // 2 parents produce 2 children
         int nChildren = popSize / 2;
         // Roulette wheel parameter S. Range: 1.0 < s ≤ 2.0
@@ -103,10 +103,14 @@ public class player15 implements ContestSubmission
 
                 // ---------- Recombination ----------
                 // choose: discreteRecombination, simpleArithmetic, singleArithmeticRecom, wholeArithmeticRecom
-                int[] N = {nChildren};
+                // TODO: look at relation recombination and nChildren
+                //   --> Paretns length must be an even number
+                // TODO: add recombination of sigmas
+                // TODO: make random in recombination use rnd_
 //                Recombination recomb = new Recombination(parents);
 //                Population.Individual[] recombChildren =
 //                        recomb.wholeArithmeticRecom();
+                int[] N = {nChildren};
                 Population childPop = new Population(
 //                        recomb, N, evaluation_::evaluate, rnd_);
                         parents, N, evaluation_::evaluate, rnd_);
