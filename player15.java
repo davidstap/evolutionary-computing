@@ -89,7 +89,7 @@ public class player15 implements ContestSubmission
                 // ---------- Recombination ----------
                 // choose: discreteRecombination, simpleArithmetic, singleArithmeticRecom, wholeArithmeticRecom
                 Recombination recomb = new Recombination(parents);                
-                Population.Unit[] recombChildren = recomb.discreteRecombination();
+                Population.Unit[] recombChildren = recomb.singleArithmeticRecom();
                 
                 
                 Population childPop = new Population(recombChildren, N, evaluation_::evaluate, rnd_);
