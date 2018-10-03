@@ -67,10 +67,14 @@ public class player15 implements ContestSubmission
     {
         // EA Parameters
         int evals = 0;
-        int popSize = 60;
-        int nChildren = 30;
+        int popSize = 80;
+        int nParents = popSize / 2;
+        // 2 parents produce 2 children
+        int nChildren = nParents;
         double mutationFactor = .1;
         evaluations_limit_ = 10000;
+        // Roulette wheel parameter S. Range: 1.0 < s ≤ 2.0
+        double sRW = 2.0;
 
         // Initialize population
         Population myPop = new Population(popSize, evaluation_::evaluate, rnd_);
@@ -81,12 +85,10 @@ public class player15 implements ContestSubmission
         if (myPop.size() == popSize) {
             // calculate fitness
             while(evals < evaluations_limit_){            
-                // TODO: add roulette wheel selection
                 // TODO: add tournament selection
                 // ---------- Parent Selection ----------
-                Population.Individual[] parents = myPop.selectParents(4);
-                
-                Population.Individual[] p2 = myPop.selectRouletteWheel(4);
+                Population.Individual[] parents = myPop.parentSelectionGreedy(nChildren);
+                // Population.Individual[] parents = myPop.parentSelectionRouletteWheel(nChildren, sRW);
                 
                 // ---------- Recombination ----------
                 // choose: discreteRecombination, simpleArithmetic, singleArithmeticRecom, wholeArithmeticRecom

@@ -77,7 +77,8 @@ public class Population
         return evals;
     }
 
-    public Individual[] selectParents(int n)
+    // Selects n best individuals as parents
+    public Individual[] parentSelectionGreedy(int n)
     {
         sort();
         Individual[] parents = new Individual[n];
@@ -89,19 +90,31 @@ public class Population
         return parents;
     }
     
-    public Individual[] selectRouletteWheel(int n)
+    // Selects n parents based on Roulette Wheel and ranking selection
+    public Individual[] parentSelectionRouletteWheel(int n, double s)
     {
       sort();
       setRanks();
-      setSelectionRank(2.0);
+      setSelectionRank(s); 
+      
       Individual[] parents = new Individual[n];
       
-      // Print parent fitness
-      for (int i=0; i<individuals.length; i++)
+      Random rnd = new Random();
+      int currentMember = 0;
+      
+      for (int j=0; j<n; j++)
       {
-        System.out.println(individuals[i].fitness);
-        System.out.println(individuals[i].rank);
-        System.out.println(individuals[i].selectionRanking);
+        double r = rnd.nextDouble();
+        int i = 0;
+        double a_i = individuals[0].selectionRanking;
+        // stop when cumulative probability exceeds r, then use i for individual.
+        while (a_i < r)
+        {
+          i+=1;
+          // Update cumulative probability distribution
+          a_i += individuals[i].selectionRanking;
+        }
+        parents[j] = individuals[i];
       }
       return parents;
     }
@@ -127,7 +140,9 @@ public class Population
       for (int i=0; i<individuals.length; i++)
       {
         // formula for selectionRank (see book p82)
-        double sr = (double) ((2-s)/individuals.length) + (double) (2*individuals[i].rank*(s-1))/(individuals.length*(individuals.length-1));        
+        double mu = (double) individuals.length;
+        double sr = (2.0-s)/(mu) + (2.0*individuals[i].rank*(s-1))/(mu*(mu-1.0));
+        // System.out.println(sr);
         individuals[i].selectionRanking = sr;
       }
     }
