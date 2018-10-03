@@ -77,7 +77,7 @@ public class Population
         return evals;
     }
 
-    public Individual[] selectParents(int n )
+    public Individual[] selectParents(int n)
     {
         sort();
         Individual[] parents = new Individual[n];
@@ -87,6 +87,49 @@ public class Population
           parents[i] = individuals[i];
         }
         return parents;
+    }
+    
+    public Individual[] selectRouletteWheel(int n)
+    {
+      sort();
+      setRanks();
+      setSelectionRank(2.0);
+      Individual[] parents = new Individual[n];
+      
+      // Print parent fitness
+      for (int i=0; i<individuals.length; i++)
+      {
+        System.out.println(individuals[i].fitness);
+        System.out.println(individuals[i].rank);
+        System.out.println(individuals[i].selectionRanking);
+      }
+      return parents;
+    }
+    
+    // Adds to every member of population the correct rank (based on fitness score)
+    // lowest rank = 0, highest rank = mu-1
+    // assumption: population is sorted before setRanks() is called
+    private void setRanks()
+    {
+      // start at highest rank
+      int currentRank = individuals.length - 1;
+      
+      for (int i=0; i<individuals.length; i++)
+      {
+        individuals[i].rank = currentRank;
+        currentRank -= 1;
+      }
+    }
+    
+    // Adds correct value for selectionRank to every individual in population
+    private void setSelectionRank(double s)
+    {
+      for (int i=0; i<individuals.length; i++)
+      {
+        // formula for selectionRank (see book p82)
+        double sr = (double) ((2-s)/individuals.length) + (double) (2*individuals[i].rank*(s-1))/(individuals.length*(individuals.length-1));        
+        individuals[i].selectionRanking = sr;
+      }
     }
 
     public void mutate(Random rnd, double factor)
@@ -145,10 +188,18 @@ public class Population
         private double[] genome;
 //        private double[] sigmas;
         public double fitness;
+        
+        // Used for ranking selection (see p81 book)
+        public double selectionRanking;
+        // ranking of individual. Note: worst rank = 0, best rank = mu-1
+        public int rank;
+        
 
         private void init()
         {
             fitness = 0.0;
+            selectionRanking = 0.0;
+            rank = 0;
         }
 
         public Individual(Random rnd)
