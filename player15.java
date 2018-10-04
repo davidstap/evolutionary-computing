@@ -122,7 +122,15 @@ public class player15 implements ContestSubmission
 
                 // TODO: add several survival mechanisms
                 // ---------- Survivor selection
-                myPop.survival(childPop);
+                try
+                {
+                    myPop.survival(childPop);
+                }
+                catch (Exception e)
+                {
+                    System.out.println(e);
+                    break;
+                }
 
             }
         }

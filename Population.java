@@ -172,36 +172,12 @@ public class Population
         }
     }
 
-    // Survival selection (mu + sigma).
-    // Picks best individuals from entire pool of parents + children
-    // and sets them as the new population.
-    public void survival_mu_plus_lambda(Population childPopulation)
-    {
-        Individual[] parentIndividuals = getIndividuals();
-        Individual[] childIndividuals = childPopulation.getIndividuals();
-        
-        // Create pool of parents and children.
-        individuals = new Individual[
-                parentIndividuals.length + childIndividuals.length];
-        for (int i = 0; i < parentIndividuals.length; i++)
-        {
-            individuals[i] = parentIndividuals[i];
-        }
-        for (int i = 0; i < childIndividuals.length; i++)
-        {
-            individuals[parentIndividuals.length + i] = childIndividuals[i];
-        }
-        
-        // Set best individuals as new population.
-        sort();
-        individuals = Arrays.copyOfRange(
-                individuals, 0, parentIndividuals.length);
-    }
-
     // Applies survival selection onto population.
-    public void survival(Population childPopulation)
+    public void survival(Population childPopulation) throws Exception
     {
-        survival_mu_plus_lambda(childPopulation);
+        Individual[] selected = Selection.mu_plus_lambda(
+            this.getIndividuals(), childPopulation.getIndividuals());
+        individuals = selected;
     }
 
     // Returns maximal fitness value found in the population.
@@ -215,11 +191,32 @@ public class Population
         return 0.0;
     }
 
+    // Sorts list of individuals from largest fitness value to smallest.
+    public static Individual[] sort(Individual[] individuals_)
+    {
+        Arrays.sort(individuals_, (i1, i2) -> Double.compare(
+                i2.fitness, i1.fitness));
+        return individuals_;
+    }
+
+    // Sorts list of individuals from smallest fitness value to largest.
+    public static Individual[] reverseSort(Individual[] individuals_)
+    {
+        Arrays.sort(individuals_, (i1, i2) -> Double.compare(
+                i1.fitness, i2.fitness));
+        return individuals_;
+    }
+
     // Sorts population from largest fitness value to smallest.
     public void sort()
     {
-        Arrays.sort(individuals, (i1, i2) -> Double.compare(
-                i2.fitness, i1.fitness));
+        individuals = sort(individuals);
+    }
+
+    // Sorts population from smallest fitness value to largest.
+    public void reverseSort()
+    {
+        individuals = reverseSort(individuals);
     }
 
     public int size()
