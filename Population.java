@@ -267,11 +267,24 @@ public class Population
     }
 
     // Mutates all individuals in the population.
-    public void mutate(Random rnd)
+    // Added mutation method to give control over type of mutation
+    // TODO difference normal_ and normal?
+    public void mutate(Random rnd, String mutation_method)
     {
-        for (Individual individual : individuals)
+        switch(mutation_method)
         {
-            individual.mutate(rnd);
+            case "normal":
+                for (Individual individual : individuals)
+                {
+                    individual.mutate_normal(rnd);
+                }
+                break;
+            case "uncorrelated":
+                for (Individual individual : individuals)
+                {
+                    individual.mutate(rnd);
+                }
+                break;
         }
     }
 
@@ -411,6 +424,20 @@ public class Population
                     getGenome(), getSigmas(), rnd, minR, maxR);
             genome = res[0];
             sigmas = res[1];
+        }
+
+        //TODO Don't hardcode pMutate
+        public void mutate_normal(Random rnd)
+        {
+            double factor = 1;
+            double pMutate = 0.1;
+            for (int i = 0; i < genome.length; i++)
+            {
+                if (pMutate > rnd.nextDouble())
+                {
+                    genome[i] = Mutation.normal_(genome[i], rnd, factor, minR, maxR);
+                }
+            }
         }
 
         // Rounds value v on n decimals.

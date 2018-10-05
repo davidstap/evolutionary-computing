@@ -71,7 +71,7 @@ public class player15 implements ContestSubmission
 
         // EA Parameters
         int evals = 0;
-        int popSize = 10;
+        int popSize = 12;
         // Tournament selection candidates
         int k = 4;
         // constant for proportional fitness
@@ -79,10 +79,17 @@ public class player15 implements ContestSubmission
 //        int nParents = popSize / 2;
         // 2 parents produce 2 children
         int nChildren = popSize / 2;
-        // Roulette wheel parameter S. Range: 1.0 < s ≤ 2.0
+        // Roulette wheel parameter S. Range: 1.0 < s  2.0
         double sRW = 2.0;
 
         evaluations_limit_ = 10000;
+
+        String recomb_method = "discrete";
+        String mutation_method = "uncorrelated";
+
+        // Test island
+        Island island = new Island(recomb_method, mutation_method, popSize, evaluation_::evaluate, rnd_);
+        island.evolutionCycle(nChildren);
 
         // Initialize population
         Population myPop = new Population(popSize, evaluation_::evaluate, rnd_);
@@ -120,7 +127,7 @@ public class player15 implements ContestSubmission
                         parents, N, evaluation_::evaluate, rnd_);
 
                 // ---------- Mutation ----------  
-                childPop.mutate(rnd_);
+                childPop.mutate(rnd_, mutation_method);
 
                 evals = childPop.evaluate(evals, evaluations_limit_);
 
