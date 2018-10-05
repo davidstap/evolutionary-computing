@@ -19,14 +19,24 @@ public class Population
     // Create population of given size using given evaluation-function
     // and random number generator.
     public Population(
-            int size, Function<double[], Object> evaluationFunction_,
-            Random rnd)
+            int size,
+            Function<double[], Object> evaluationFunction_, Random rnd)
     {
         individuals = new Individual[size];
         for (int i = 0; i < size; i++)
         {
-            individuals[i] = this.new Individual(rnd);
+            individuals[i] = new Individual(rnd);
         }
+        evaluationFunction = evaluationFunction_;
+    }
+
+    // Create population of given individuals using given evaluation-function
+    // and random number generator.
+    public Population(
+            Individual[] individuals_,
+            Function<double[], Object> evaluationFunction_)
+    {
+        individuals = Arrays.copyOfRange(individuals_, 0, individuals_.length);
         evaluationFunction = evaluationFunction_;
     }
 
@@ -34,7 +44,7 @@ public class Population
     // Uses given evaluation function and random number generator.
     public Population(
             Individual[] parents, int[] N,
-            Function<double[], Object> evaluationFunction_, Random rnd)
+            Function<double[], Object> evaluationFunction_)
     {
         // Count total population size.
         int i = 0;
@@ -50,7 +60,7 @@ public class Population
         {
             for (int k = 0; k < N[j]; k++)
             {
-                individuals[i] = this.new Individual(
+                individuals[i] = new Individual(
                         parents[j].getGenome(), parents[j].getSigmas());
                 i++;
             }
@@ -97,6 +107,14 @@ public class Population
     public Individual[] parentSelection(int k)
     {
         return Selection.greedy(this.getIndividuals(), k);
+    }
+
+    public Individual[] recombination(
+            Individual[] list1, Individual[] list2, Random rnd)
+            throws ArrayIndexOutOfBoundsException, IllegalArgumentException
+    {
+        return Recombination.recombination(
+                list1, list2, rnd, Recombination.TYPE.ONEPOINT);
     }
 
     // TODO move to Selection.java.
@@ -173,7 +191,7 @@ public class Population
 
     // Applies survival selection onto population.
     public void survival(Population childPopulation, Random rnd)
-            throws Exception
+            throws ArrayIndexOutOfBoundsException
     {
         Individual[] selected = Selection.mu_plus_lambda(
             this.getIndividuals(), childPopulation.getIndividuals());
@@ -234,7 +252,7 @@ public class Population
     }
 
     // Subclass to contain one individual of the population.
-    public class Individual implements Comparable<Individual>
+    public static class Individual implements Comparable<Individual>
     {
 
         // Ranges in which genome values fall.
@@ -319,6 +337,7 @@ public class Population
             String s = Double.toString(
                     Math.round(fitness*1e3)/1e3)
                     + " [";
+            // XXX prints only half for convenience.
             for (int i = 0; i < genome.length/2; i++)
             {
                 s += "(" + Double.toString(Math.round(genome[i]*1e3)/1e3) +
@@ -333,7 +352,7 @@ public class Population
             String s = Double.toString(
                     fitness)
                     + " [";
-            for (int i = 0; i < genome.length/2; i++)
+            for (int i = 0; i < genome.length; i++)
             {
                 s += "(" + Double.toString(genome[i]) +
                     ", " + Double.toString(sigmas[i]) +

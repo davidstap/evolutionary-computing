@@ -118,11 +118,11 @@ public class Selection
     // Replaces worst parents for children.
     public static Population.Individual[] genitor(
             Population.Individual[] parents, Population.Individual[] children)
-            throws Exception
+            throws ArrayIndexOutOfBoundsException
     {
         if (children.length > parents.length)
         {
-            throw new Exception("\n\t" +
+            throw new ArrayIndexOutOfBoundsException("\n\t" +
                     Selection.class.getName() + "::genitor: " +
                     "children.length > parents.length");
         }
@@ -213,11 +213,11 @@ public class Selection
     // Picks best individuals from children
     public static Population.Individual[] mu_comma_lambda(
             Population.Individual[] parents, Population.Individual[] children)
-            throws Exception
+            throws ArrayIndexOutOfBoundsException
     {
         if (children.length < parents.length)
         {
-            throw new Exception("\n\t" +
+            throw new ArrayIndexOutOfBoundsException("\n\t" +
                     Selection.class.getName() + "::mu_comma_lambda: " +
                     "children.length < parents.length");
         }

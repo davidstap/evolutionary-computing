@@ -63,6 +63,29 @@ public class player15 implements ContestSubmission
         }
     }
 
+    // Splits list of individuals
+    // into list of even entries and list of uneven entries.
+    public Population.Individual[][] splitIndividuals(
+            Population.Individual[] individuals_)
+    {
+        int nPairs = (int)(individuals_.length / 2);
+        Population.Individual[][] individuals =
+                new Population.Individual[2][nPairs];
+        for (int i = 0; i < nPairs; i++)
+        {
+            individuals[0][i] = individuals_[2 * i];
+            individuals[1][i] = individuals_[2 * i + 1];
+        }
+        return individuals;
+    }
+
+    public void printException(Exception e)
+    {
+        System.out.print("\u001B[31m");
+        System.out.print(e);
+        System.out.print("\u001B[0m");
+    }
+
     public void run()
     {
         // Run your algorithm here
@@ -98,27 +121,39 @@ public class player15 implements ContestSubmission
                 // ---------- Parent Selection ----------
                 Population.Individual[] parents =
                         myPop.parentSelection(nChildren);
-//                Population.Individual[] parents =
-//                        myPop.parentSelectionRouletteWheel(nChildren, sRW);
+
+                Population.Individual[][] splitParents =
+                        splitIndividuals(parents);
+
 
                 // ---------- Recombination ----------
-                // choose: discreteRecombination, simpleArithmetic, singleArithmeticRecom, wholeArithmeticRecom
-                // TODO: look at relation recombination and nChildren
-                //   --> Paretns length must be an even number
-                // TODO: add recombination of sigmas
-                // TODO: make random in recombination use rnd_
-//                Recombination recomb = new Recombination(parents);
-//                Population.Individual[] recombChildren =
-//                        recomb.wholeArithmeticRecom();
-                int[] N = {nChildren};
+                Population.Individual[] children;
+                try
+                {
+                    children = myPop.recombination(
+                                    splitParents[0], splitParents[1], rnd_);
+                }
+                catch (ArrayIndexOutOfBoundsException e)
+                {
+                    printException(e);
+                    break;
+                }
+                catch (IllegalArgumentException e)
+                {
+                    printException(e);
+                    break;
+                }
+
                 Population childPop = new Population(
-//                        recomb, N, evaluation_::evaluate, rnd_);
-                        parents, N, evaluation_::evaluate, rnd_);
+//                        parents, new int[]{nChildren}, evaluation_::evaluate);
+                        children, evaluation_::evaluate);
+
 
                 // ---------- Mutation ----------  
                 childPop.mutate(rnd_);
 
                 evals = childPop.evaluate(evals, evaluations_limit_);
+
 
                 // TODO: add several survival mechanisms
                 // ---------- Survivor selection
@@ -126,9 +161,9 @@ public class player15 implements ContestSubmission
                 {
                     myPop.survival(childPop, rnd_);
                 }
-                catch (Exception e)
+                catch (ArrayIndexOutOfBoundsException e)
                 {
-                    System.out.println(e);
+                    printException(e);
                     break;
                 }
 

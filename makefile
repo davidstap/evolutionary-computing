@@ -1,7 +1,7 @@
 INFO := MainClass.txt
 FILE := $(lastword $(shell cat $(INFO)))
 
-FILES := $(FILE) Children Mutation Population Recombination Selection
+FILES := $(FILE) Mutation Population Recombination Selection
 JFILES := $(patsubst %,%.java,$(FILES))
 NESTCS := $(foreach file,$(FILES),$(wildcard $(file)$$*.class))
 CFILES := $(subst $$,\$$,$(patsubst %,%.class,$(FILES)) $(NESTCS))
