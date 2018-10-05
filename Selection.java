@@ -9,7 +9,7 @@ public class Selection
 // TODO reduce as many selections to working with only one Individual[]
 
     // Combines two lists of individuals.
-    public static Population.Individual[] individualsAND(
+    private static Population.Individual[] individualsAND(
             Population.Individual[] list1, Population.Individual[] list2)
     {
         Population.Individual[] individuals = new Population.Individual[
@@ -28,7 +28,7 @@ public class Selection
     // TODO NEEDS TESTING
     // Determines whether given individual_ is present in individuals
     // using genome comparison.
-    public static boolean isDuplicate(
+    private static boolean isDuplicate(
             Population.Individual individual_,
             Population.Individual[] individuals)
     {
@@ -55,7 +55,7 @@ public class Selection
 
     // TODO NEEDS TESTING
     // Sorts individuals on array of integers from highest to lowest.
-    public static Population.Individual[] individualsBubbleSort(
+    private static Population.Individual[] individualsBubbleSort(
             Population.Individual[] individuals, int[] values)
     {
         boolean changed;
@@ -83,6 +83,35 @@ public class Selection
         while (changed == true);
         return individuals;
     }
+
+    // Uniformly picks k individuals from the population.
+    public static Population.Individual[] uniform(
+            Population.Individual[] individuals_, Random rnd, int k)
+    {
+        Population.Individual[] individuals = new Population.Individual[k];
+        for (int i = 0; i < k; i++)
+        {
+            int P = (int)(rnd.nextDouble() * individuals_.length);
+            System.out.println(P);
+            individuals[i] =
+                    individuals_[P];
+        }
+        return individuals;
+    }
+
+    // Selects k best individuals.
+    public static Population.Individual[] greedy(
+            Population.Individual[] individuals, int k)
+    {
+        individuals = Population.sort(individuals);
+        return Arrays.copyOfRange(individuals, 0, k);
+    }
+    
+    /* TODO
+    // Selects k individuals based on Roulette Wheel and ranking selection.
+    public static Population.Individual[] rouletteWheel(
+            Population.Individuals[] individuals, int k, double s)
+    */
 
     // TODO NEEDS TESTING
     // Survival selection Genitor.
@@ -136,12 +165,10 @@ public class Selection
 
     // TODO NEEDS TESTING
     // Compare individual each individual to q other individuals,
-    // return best scoring individuals.
+    // return in order of best to worst scoring individuals.
     public static Population.Individual[] roundRobin(
-            Population.Individual[] parents, Population.Individual[] children,
-            int q, Random rnd)
+            Population.Individual[] individuals, int q, Random rnd)
     {
-        Population.Individual[] individuals = individualsAND(parents, children);
         int[] wins = new int[individuals.length];
         for (int i = 0; i < individuals.length; i++)
         {
@@ -153,7 +180,18 @@ public class Selection
                 }
             }
         }
-        individuals = individualsBubbleSort(individuals, wins);
+        return individualsBubbleSort(individuals, wins);
+    }
+
+    // TODO NEEDS TESTING
+    // Compare individual each individual to q other individuals,
+    // return best scoring individuals.
+    public static Population.Individual[] survivalRoundRobin(
+            Population.Individual[] parents, Population.Individual[] children,
+            int q, Random rnd)
+    {
+        Population.Individual[] individuals = individualsAND(parents, children);
+        individuals = roundRobin(individuals, q, rnd);
         return Arrays.copyOfRange(individuals, 0, parents.length);
     }
 

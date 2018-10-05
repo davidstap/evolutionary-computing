@@ -97,7 +97,7 @@ public class player15 implements ContestSubmission
                 // TODO: add tournament selection
                 // ---------- Parent Selection ----------
                 Population.Individual[] parents =
-                        myPop.parentSelectionGreedy(nChildren);
+                        myPop.parentSelection(nChildren);
 //                Population.Individual[] parents =
 //                        myPop.parentSelectionRouletteWheel(nChildren, sRW);
 
@@ -124,7 +124,7 @@ public class player15 implements ContestSubmission
                 // ---------- Survivor selection
                 try
                 {
-                    myPop.survival(childPop);
+                    myPop.survival(childPop, rnd_);
                 }
                 catch (Exception e)
                 {

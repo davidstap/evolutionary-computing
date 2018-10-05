@@ -94,13 +94,12 @@ public class Population
         return evals;
     }
 
-    // Selects n best individuals as parents.
-    public Individual[] parentSelectionGreedy(int n)
+    public Individual[] parentSelection(int k)
     {
-        sort();
-        return Arrays.copyOfRange(individuals, 0, n);
+        return Selection.greedy(this.getIndividuals(), k);
     }
-    
+
+    // TODO move to Selection.java.
     // Selects n parents based on Roulette Wheel and ranking selection.
     public Individual[] parentSelectionRouletteWheel(int n, double s)
     {
@@ -113,7 +112,7 @@ public class Population
       Random rnd = new Random();
       int currentMember = 0;
       
-      for (int j=0; j<n; j++)
+      for (int j = 0; j < n; j++)
       {
         double r = rnd.nextDouble();
         int i = 0;
@@ -131,7 +130,7 @@ public class Population
       }
       return parents;
     }
-    
+
     // Adds to every member of population the correct rank
     // (based on fitness score).
     // Lowest rank = 0
@@ -173,7 +172,8 @@ public class Population
     }
 
     // Applies survival selection onto population.
-    public void survival(Population childPopulation) throws Exception
+    public void survival(Population childPopulation, Random rnd)
+            throws Exception
     {
         Individual[] selected = Selection.mu_plus_lambda(
             this.getIndividuals(), childPopulation.getIndividuals());
@@ -317,6 +317,20 @@ public class Population
         public String toString()
         {
             String s = Double.toString(
+                    Math.round(fitness*1e3)/1e3)
+                    + " [";
+            for (int i = 0; i < genome.length/2; i++)
+            {
+                s += "(" + Double.toString(Math.round(genome[i]*1e3)/1e3) +
+                    ", " + Double.toString(Math.round(sigmas[i]*1e3)/1e3) +
+                    "), ";
+            }
+            return s.substring(0, s.length() - 2) + "]";
+        }
+/*
+        public String toString()
+        {
+            String s = Double.toString(
                     fitness)
                     + " [";
             for (int i = 0; i < genome.length/2; i++)
@@ -327,7 +341,7 @@ public class Population
             }
             return s.substring(0, s.length() - 2) + "]";
         }
-
+*/
         @Override
         public int compareTo(Individual individual)
         {
