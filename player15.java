@@ -72,6 +72,10 @@ public class player15 implements ContestSubmission
         // EA Parameters
         int evals = 0;
         int popSize = 10;
+        // Tournament selection candidates
+        int k = 4;
+        // constant for proportional fitness
+        int c = 2;
 //        int nParents = popSize / 2;
         // 2 parents produce 2 children
         int nChildren = popSize / 2;
@@ -97,7 +101,7 @@ public class player15 implements ContestSubmission
                 // TODO: add tournament selection
                 // ---------- Parent Selection ----------
                 Population.Individual[] parents =
-                        myPop.parentSelectionGreedy(nChildren);
+                        myPop.selectParentsTournament(nChildren, k, c);
 //                Population.Individual[] parents =
 //                        myPop.parentSelectionRouletteWheel(nChildren, sRW);
 
