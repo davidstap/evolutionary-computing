@@ -12,18 +12,21 @@ import java.util.function.Function;
 public class player15 implements ContestSubmission
 {
     Random rnd_;
+    Random islandRnd_;
     ContestEvaluation evaluation_;
     private int evaluations_limit_;
 
     public player15()
     {
         rnd_ = new Random();
+        islandRnd_ = new Random();
     }
 
     public void setSeed(long seed)
     {
         // Set seed of algortihms random process
         rnd_.setSeed(seed);
+        islandRnd_.setSeed(seed);
     }
 
     public void setEvaluation(ContestEvaluation evaluation)
@@ -63,22 +66,6 @@ public class player15 implements ContestSubmission
         }
     }
 
-    // Splits list of individuals
-    // into list of even entries and list of uneven entries.
-    public Population.Individual[][] splitIndividuals(
-            Population.Individual[] individuals_)
-    {
-        int nPairs = (int)(individuals_.length / 2);
-        Population.Individual[][] individuals =
-                new Population.Individual[2][nPairs];
-        for (int i = 0; i < nPairs; i++)
-        {
-            individuals[0][i] = individuals_[2 * i];
-            individuals[1][i] = individuals_[2 * i + 1];
-        }
-        return individuals;
-    }
-
     public void printException(Exception e)
     {
         System.out.print("\u001B[31m");
@@ -94,14 +81,29 @@ public class player15 implements ContestSubmission
 
         // EA Parameters
         int evals = 0;
-        int popSize = 10;
+        int popSize = 12;
+        // Tournament selection candidates
+        int k = 4;
+        // constant for proportional fitness
+        int c = 2;
 //        int nParents = popSize / 2;
         // 2 parents produce 2 children
         int nChildren = popSize / 2;
-        // Roulette wheel parameter S. Range: 1.0 < s ≤ 2.0
+        // Roulette wheel parameter S. Range: 1.0 < s  2.0
         double sRW = 2.0;
 
         evaluations_limit_ = 10000;
+
+        String recomb_method = "uniform";
+        String mutation_method = "uncorrelated";
+
+
+        // Test island
+        // (XXX Uses different random so values in myPop stay the same
+        //      while Island.java develops.)
+        Island island = new Island(recomb_method, mutation_method, popSize, evaluation_::evaluate, islandRnd_);
+        island.evolutionCycle(nChildren);
+
 
         // Initialize population
         Population myPop = new Population(popSize, evaluation_::evaluate, rnd_);
@@ -122,16 +124,15 @@ public class player15 implements ContestSubmission
                 Population.Individual[] parents =
                         myPop.parentSelection(nChildren);
 
-                Population.Individual[][] splitParents =
-                        splitIndividuals(parents);
-
+//                myPop.selectParentsTournament(nChildren, k, c);
+//                Population.Individual[] parents =
+//                        myPop.parentSelectionRouletteWheel(nChildren, sRW);
 
                 // ---------- Recombination ----------
                 Population.Individual[] children;
                 try
                 {
-                    children = myPop.recombination(
-                                    splitParents[0], splitParents[1], rnd_);
+                    children = myPop.recombination(parents, rnd_);
                 }
                 catch (ArrayIndexOutOfBoundsException e)
                 {
@@ -150,7 +151,7 @@ public class player15 implements ContestSubmission
 
 
                 // ---------- Mutation ----------  
-                childPop.mutate(rnd_);
+                childPop.mutate(rnd_, mutation_method);
 
                 evals = childPop.evaluate(evals, evaluations_limit_);
 

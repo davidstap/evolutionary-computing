@@ -13,6 +13,32 @@ public class Recombination
         ONEPOINT, UNIFORM, SIMPLEARITHMETIC, SINGLEARITHMETIC, WHOLEARITHMETIC
     }
 
+    // Splits list of individuals
+    // into list of even entries and list of uneven entries.
+    public static Population.Individual[][] splitIndividuals(
+            Population.Individual[] individuals_)
+    {
+        int nPairs = (int)(individuals_.length / 2);
+        Population.Individual[][] individuals =
+                new Population.Individual[2][nPairs];
+        for (int i = 0; i < nPairs; i++)
+        {
+            individuals[0][i] = individuals_[2 * i];
+            individuals[1][i] = individuals_[2 * i + 1];
+        }
+        return individuals;
+    }
+
+    // Calls main recombination method, but first splits parents.
+    public static Population.Individual[] recombination(
+            Population.Individual[] individuals,
+            Random rnd, TYPE type)
+            throws ArrayIndexOutOfBoundsException, IllegalArgumentException
+    {
+        Population.Individual[][] splitParents = splitIndividuals(individuals);
+        return recombination(splitParents[0], splitParents[1], rnd, type);
+    }
+
     // Main recombination method.
     // Applies recombination on pairs of individuals (one from each list),
     // each recombination results in two children,
