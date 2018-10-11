@@ -284,12 +284,13 @@ public class Population
         return Selection.greedy(this.getIndividuals(), k);
     }
 
-    public Individual[] recombination(
-            Individual[] individuals, Random rnd)
+    public Individual[] recombination(Individual[] individuals, Random rnd,
+            Recombination.TYPE recombinationType,
+            HashMap<String, Double> params)
             throws ArrayIndexOutOfBoundsException, IllegalArgumentException
     {
         return Recombination.recombination(
-                individuals, rnd, Recombination.TYPE.ONEPOINT);
+                individuals, rnd, recombinationType, params);
     }
 
     // Mutates all individuals in the population.

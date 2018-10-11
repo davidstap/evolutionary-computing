@@ -103,6 +103,10 @@ public class player15 implements ContestSubmission
         String recomb_method = "uniform";
         String mutation_method = "uncorrelated";
 
+        Recombination.TYPE recombinationType = Recombination.TYPE.UNIFORM;
+        HashMap<String, Double> recombinationParams =
+                new HashMap<String, Double>();
+
         Mutation.TYPE mutationType = Mutation.TYPE.UNCORRELATED;
         HashMap<String, Double> mutationParams = new HashMap<String, Double>();
         mutationParams.put(Mutation.PARAM.MUTATIONRATE.toString(),
@@ -143,7 +147,8 @@ public class player15 implements ContestSubmission
                 Population.Individual[] children;
                 try
                 {
-                    children = myPop.recombination(parents, rnd_);
+                    children = myPop.recombination(parents, rnd_,
+                            recombinationType, recombinationParams);
                 }
                 catch (ArrayIndexOutOfBoundsException e)
                 {

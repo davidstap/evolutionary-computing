@@ -1,4 +1,5 @@
 import java.util.Random;
+import java.util.HashMap;
 
 public class Recombination
 {
@@ -12,8 +13,10 @@ public class Recombination
     public enum TYPE {
         ONEPOINT, UNIFORM, SIMPLEARITHMETIC, SINGLEARITHMETIC, WHOLEARITHMETIC
     }
+    
+    // Potential crossover parameters.
     public enum PARAM {
-        DISCRETE_PROPORTIOIN, ARITHMETIC_PROPORTION 
+        ALPHA
     }
 
     // Splits list of individuals
@@ -34,12 +37,36 @@ public class Recombination
 
     // Calls main recombination method, but first splits parents.
     public static Population.Individual[] recombination(
-            Population.Individual[] individuals,
-            Random rnd, TYPE type)
+            Population.Individual[] individuals, Random rnd, TYPE type,
+            HashMap<String, Double> params)
             throws ArrayIndexOutOfBoundsException, IllegalArgumentException
     {
         Population.Individual[][] splitParents = splitIndividuals(individuals);
-        return recombination(splitParents[0], splitParents[1], rnd, type);
+        return recombination(
+                splitParents[0], splitParents[1], rnd, type, params);
+    }
+
+    // Calls main recombination method, but first splits parents.
+    public static Population.Individual[] recombination(
+            Population.Individual[] individuals, Random rnd, TYPE type,
+            double alpha)
+            throws ArrayIndexOutOfBoundsException, IllegalArgumentException
+    {
+        Population.Individual[][] splitParents = splitIndividuals(individuals);
+        return recombination(
+                splitParents[0], splitParents[1], rnd, type, alpha);
+    }
+
+    public static Population.Individual[] recombination(
+            Population.Individual[] list1, Population.Individual[] list2,
+            Random rnd, TYPE type, HashMap<String, Double> params)
+            throws ArrayIndexOutOfBoundsException, IllegalArgumentException
+    {
+        String param = PARAM.ALPHA.toString();
+        double alpha = params.containsKey(param) ?
+                params.get(param) :
+                0.5;
+        return recombination(list1, list2, rnd, type, alpha);
     }
 
     // Main recombination method.
@@ -48,7 +75,7 @@ public class Recombination
     // and returns list of newly created individuals.
     public static Population.Individual[] recombination(
             Population.Individual[] list1, Population.Individual[] list2,
-            Random rnd, TYPE type)
+            Random rnd, TYPE type, double alpha)
             throws ArrayIndexOutOfBoundsException, IllegalArgumentException
     {
         // Check whether two parents are given for each recombination.
@@ -91,7 +118,7 @@ public class Recombination
                         }
                         break;
                     case UNIFORM:
-                        if (rnd.nextDouble() < 0.5)                                                                         // TODO create PARAMETER
+                        if (rnd.nextDouble() < alpha)
                         {
                             setSame(j, g1, s1, g2, s2, cg1, cs1, cg2, cs2);
                         }
@@ -108,14 +135,16 @@ public class Recombination
                         else
                         {
                             setArithmetic(
-                                    j, g1, s1, g2, s2, cg1, cs1, cg2, cs2);
+                                    j, g1, s1, g2, s2, cg1, cs1, cg2, cs2,
+                                    alpha);
                         }
                         break;
                     case SINGLEARITHMETIC:
                         if (j == k)
                         {
                             setArithmetic(
-                                    j, g1, s1, g2, s2, cg1, cs1, cg2, cs2);
+                                    j, g1, s1, g2, s2, cg1, cs1, cg2, cs2,
+                                    alpha);
                         }
                         else
                         {
@@ -123,7 +152,8 @@ public class Recombination
                         }
                         break;
                     case WHOLEARITHMETIC:
-                        setArithmetic(j, g1, s1, g2, s2, cg1, cs1, cg2, cs2);
+                        setArithmetic(j, g1, s1, g2, s2, cg1, cs1, cg2, cs2,
+                                alpha);
                         break;
                     // Throw exception if given recombination type is invalid.
                     default:
@@ -165,21 +195,23 @@ public class Recombination
         cs2[k] = s1[k];
     }
 
-    private static double arithmeticFunction(double p1, double p2){
-        double alpha = 0.5;                                                                                                     // TODO create PARAMETER
-        return alpha * p1 + (1 - alpha) * p2;
+    private static double arithmeticFunction(
+            double p1, double p2, double alpha)
+    {
+        return alpha * p1 + (1.0 - alpha) * p2;
     }
 
     // Sets gene and sigma of child to a combination of the parent-values.
     private static void setArithmetic(
             int k,
             double[] g1, double[] s1, double[] g2, double[] s2,
-            double[] cg1, double[] cs1, double[] cg2, double[] cs2)
+            double[] cg1, double[] cs1, double[] cg2, double[] cs2,
+            double alpha)
     {
-        cg1[k] = arithmeticFunction(g1[k], g2[k]);
-        cs1[k] = arithmeticFunction(s1[k], s2[k]);
-        cg2[k] = arithmeticFunction(g2[k], g1[k]);
-        cs2[k] = arithmeticFunction(s2[k], s1[k]);
+        cg1[k] = arithmeticFunction(g1[k], g2[k], alpha);
+        cs1[k] = arithmeticFunction(s1[k], s2[k], alpha);
+        cg2[k] = arithmeticFunction(g2[k], g1[k], alpha);
+        cs2[k] = arithmeticFunction(s2[k], s1[k], alpha);
     }
 
 }
