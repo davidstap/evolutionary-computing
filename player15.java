@@ -103,10 +103,12 @@ public class player15 implements ContestSubmission
         String recomb_method = "uniform";
         String mutation_method = "uncorrelated";
 
+        // Setting recombination type and parameters.
         Recombination.TYPE recombinationType = Recombination.TYPE.UNIFORM;
         HashMap<String, Double> recombinationParams =
                 new HashMap<String, Double>();
 
+        // Setting mutation type and parameters.
         Mutation.TYPE mutationType = Mutation.TYPE.UNCORRELATED;
         HashMap<String, Double> mutationParams = new HashMap<String, Double>();
         mutationParams.put(Mutation.PARAM.MUTATIONRATE.toString(),

@@ -35,7 +35,7 @@ public class Recombination
         return individuals;
     }
 
-    // Calls main recombination method, but first splits parents.
+    // Calls method that unpacks parameter hashmap, but first splits parents.
     public static Population.Individual[] recombination(
             Population.Individual[] individuals, Random rnd, TYPE type,
             HashMap<String, Double> params)
@@ -57,6 +57,7 @@ public class Recombination
                 splitParents[0], splitParents[1], rnd, type, alpha);
     }
 
+    // Calls main recombination method after unpacking hashmap of parameters.
     public static Population.Individual[] recombination(
             Population.Individual[] list1, Population.Individual[] list2,
             Random rnd, TYPE type, HashMap<String, Double> params)

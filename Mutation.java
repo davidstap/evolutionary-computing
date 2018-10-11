@@ -102,8 +102,9 @@ public class Mutation {
         Private functions
     **************************************************************************/
 
-    // Returns random value from gaussian distribution with given mean
-    // and standard deviation, generated using given random number generator.
+    // Returns random value from a gaussian distribution with given mean (mu)
+    // and standard deviation (simga).
+    // Values are generated using given random number generator.
     private static double N(Random rnd, double mu, double sigma)
     {
         return mu + rnd.nextGaussian() * sigma;
@@ -113,27 +114,7 @@ public class Mutation {
         Gaussian mutation
     **************************************************************************/
 
-    public static double gaussian_(
-            double gene, Random rnd, double lowerBound, double upperBound,
-            double mu, double sigma)
-    {
-        double tmp;
-        if (lowerBound < upperBound)
-        {
-            do
-            {
-                tmp = gene + N(rnd, mu, sigma);
-            }
-            // Keep genome within given range.
-            while (tmp < lowerBound || tmp > upperBound);
-        }
-        else
-        {
-            tmp = gene + N(rnd, mu, sigma);
-        }
-        return tmp;
-    }
-
+    // Calls main gaussian method after first unpacking parameter hashmap.
     public static double[] gaussian(
             double[] genome, Random rnd, double lowerBound, double upperBound,
             HashMap<String, Double> params)
@@ -154,12 +135,18 @@ public class Mutation {
                 mutationRate, mu, sigma);
     }
 
+    // Main gaussian method.
+    // Applies mutation adding values to genes along a gaussian distribution
+    // of given mean (mu) and standard deviation (sigma).
+    // Randomly generated values are created using the given random generator.
+    // Genome values are kept between given lower and upper bound.
     public static double[] gaussian(
             double[] genome, Random rnd, double lowerBound, double upperBound,
             double mutationRate, double mu, double sigma)
     {
         for (int i = 0; i < genome.length; i++)
         {
+            // Decide to apply mutation to current gene.
             if (mutationRate > rnd.nextDouble())
             {
                 genome[i] = gaussian_(genome[i], rnd, lowerBound, upperBound,
@@ -169,53 +156,34 @@ public class Mutation {
         return genome;
     }
 
-    /**************************************************************************
-        Uncorrelated mutation
-    **************************************************************************/
-
-    public static double[] uncorrelated__(
-            double gene, double sigma, Random rnd,
-            double theta, double theta_, double etha)
+    // Step in gaussian for one gene and sigma.
+    public static double gaussian_(
+            double gene, Random rnd, double lowerBound, double upperBound,
+            double mu, double sigma)
     {
-        double sValue, gValue;
-        // Mutate step size.
-        sValue = sigma * Math.pow(Math.E,
-                theta_ * N(rnd, 0, 1) +
-                theta * N(rnd, 0, 1));
-        // Correct for step sizes that are too small.
-        if (sValue < etha)
-        {
-            sValue = etha;
-        }
-        // Mutate genome.
-        gValue = gene + sValue * N(rnd, 0, 1);
-        return new double[] { gValue, sValue };
-    }
-
-    public static double[] uncorrelated_(
-            double gene, double sigma, Random rnd,
-            double lowerBound, double upperBound,
-            double theta, double theta_, double etha)
-    {
-        double[] tmp;
+        double tmp;
         if (lowerBound < upperBound)
         {
             do
             {
-                tmp = uncorrelated__(gene, sigma, rnd,
-                        theta, theta_, etha);
+                tmp = gene + N(rnd, mu, sigma);
             }
             // Keep genome within given range.
-            while (tmp[0] < lowerBound || tmp[0] > upperBound);
+            while (tmp < lowerBound || tmp > upperBound);
         }
+        // Ignore lower and upper bound if lower > upper.
         else
         {
-            tmp = uncorrelated__(gene, sigma, rnd,
-                    theta, theta_, etha);
+            tmp = gene + N(rnd, mu, sigma);
         }
         return tmp;
     }
 
+    /**************************************************************************
+        Uncorrelated mutation
+    **************************************************************************/
+
+    // Calls main uncorrelated method after first unpacking parameter hashmap.
     public static double[][] uncorrelated(
             double[] genome, double[] sigmas, Random rnd,
             double lowerBound, double upperBound,
@@ -241,6 +209,7 @@ public class Mutation {
                 mutationRate, theta, theta_, etha);
     }
 
+    // Main uncorrelated method.
     // Applies uncorrelated mutation with n step sizes (book page 60).
     // Mutation is applied to genome and step sizes in sigmas.
     // Randomly generated values are created using the given random generator.
@@ -254,7 +223,7 @@ public class Mutation {
         double[] tmp;
         for (int i = 0; i < genome.length; i++)
         {
-            // Decide to apply mutation to current gene.
+            // Decide to apply mutation to current gene and sigma.
             if (mutationRate > rnd.nextDouble())
             {
                 tmp = uncorrelated_(genome[i], sigmas[i], rnd,
@@ -265,6 +234,52 @@ public class Mutation {
             }
         }
         return new double[][] { genome, sigmas };
+    }
+
+    // Step in uncorrelated for one gene and sigma.
+    public static double[] uncorrelated_(
+            double gene, double sigma, Random rnd,
+            double lowerBound, double upperBound,
+            double theta, double theta_, double etha)
+    {
+        double[] tmp;
+        if (lowerBound < upperBound)
+        {
+            do
+            {
+                tmp = uncorrelated__(gene, sigma, rnd,
+                        theta, theta_, etha);
+            }
+            // Keep genome within given range.
+            while (tmp[0] < lowerBound || tmp[0] > upperBound);
+        }
+        // Ignore lower and upper bound if lower > upper.
+        else
+        {
+            tmp = uncorrelated__(gene, sigma, rnd,
+                    theta, theta_, etha);
+        }
+        return tmp;
+    }
+
+    // Step in uncorrelated calculating new gene and sigma.
+    public static double[] uncorrelated__(
+            double gene, double sigma, Random rnd,
+            double theta, double theta_, double etha)
+    {
+        double sValue, gValue;
+        // Mutate step size.
+        sValue = sigma * Math.pow(Math.E,
+                theta_ * N(rnd, 0, 1) +
+                theta * N(rnd, 0, 1));
+        // Correct for step sizes that are too small.
+        if (sValue < etha)
+        {
+            sValue = etha;
+        }
+        // Mutate genome.
+        gValue = gene + sValue * N(rnd, 0, 1);
+        return new double[] { gValue, sValue };
     }
 
 }
