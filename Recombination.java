@@ -12,10 +12,13 @@ public class Recombination
     public enum TYPE {
         ONEPOINT, UNIFORM, SIMPLEARITHMETIC, SINGLEARITHMETIC, WHOLEARITHMETIC
     }
+    public enum PARAM {
+        DISCRETE_PROPORTIOIN, ARITHMETIC_PROPORTION 
+    }
 
     // Splits list of individuals
     // into list of even entries and list of uneven entries.
-    public static Population.Individual[][] splitIndividuals(
+    private static Population.Individual[][] splitIndividuals(
             Population.Individual[] individuals_)
     {
         int nPairs = (int)(individuals_.length / 2);
@@ -53,7 +56,7 @@ public class Recombination
         {
             throw new ArrayIndexOutOfBoundsException("\n\t" +
                     Recombination.class.getName() +
-                    ": input arrays of unequal length");
+                    ": input arrays of unequal length\n");
         }
         
         Population.Individual[] individuals =
@@ -88,7 +91,7 @@ public class Recombination
                         }
                         break;
                     case UNIFORM:
-                        if (rnd.nextDouble() < 0.5)
+                        if (rnd.nextDouble() < 0.5)                                                                         // TODO create PARAMETER
                         {
                             setSame(j, g1, s1, g2, s2, cg1, cs1, cg2, cs2);
                         }
@@ -126,7 +129,7 @@ public class Recombination
                     default:
                         throw new IllegalArgumentException("\n\t" +
                                 Recombination.class.getName() +
-                                ": recombination type not recognized");
+                                ": recombination type not recognized\n");
                 }
             }
             // Create new individual.
@@ -163,7 +166,7 @@ public class Recombination
     }
 
     private static double arithmeticFunction(double p1, double p2){
-        double alpha = 0.5;
+        double alpha = 0.5;                                                                                                     // TODO create PARAMETER
         return alpha * p1 + (1 - alpha) * p2;
     }
 

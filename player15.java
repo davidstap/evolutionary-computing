@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.Iterator;
 import java.util.Arrays;
 import java.util.function.Function;
+import java.util.HashMap;
 
 public class player15 implements ContestSubmission
 {
@@ -92,17 +93,27 @@ public class player15 implements ContestSubmission
         // Roulette wheel parameter S. Range: 1.0 < s  2.0
         double sRW = 2.0;
 
+/*
+        popSize = 4;
+        nChildren = popSize;
+*/
+
         evaluations_limit_ = 10000;
 
         String recomb_method = "uniform";
         String mutation_method = "uncorrelated";
 
+        Mutation.TYPE mutationType = Mutation.TYPE.UNCORRELATED;
+        HashMap<String, Double> mutationParams = new HashMap<String, Double>();
+        mutationParams.put(Mutation.PARAM.MUTATIONRATE.toString(),
+                1.0 / Population.dim);
+
 
         // Test island
         // (XXX Uses different random so values in myPop stay the same
         //      while Island.java develops.)
-        Island island = new Island(recomb_method, mutation_method, popSize, evaluation_::evaluate, islandRnd_);
-        island.evolutionCycle(nChildren);
+//        Island island = new Island(recomb_method, mutation_method, popSize, evaluation_::evaluate, islandRnd_);
+//        island.evolutionCycle(nChildren);
 
 
         // Initialize population
@@ -148,13 +159,13 @@ public class player15 implements ContestSubmission
                 Population childPop = new Population(
 //                        parents, new int[]{nChildren}, evaluation_::evaluate);
                         children, evaluation_::evaluate);
+//                        new Population.Individual[]{myPop.getIndividuals()[0]}, new int[]{nChildren}, evaluation_::evaluate);
 
 
                 // ---------- Mutation ----------  
-                childPop.mutate(rnd_, mutation_method);
+                childPop.mutate(rnd_, mutationType, mutationParams);
 
                 evals = childPop.evaluate(evals, evaluations_limit_);
-
 
                 // TODO: add several survival mechanisms
                 // ---------- Survivor selection
@@ -167,6 +178,13 @@ public class player15 implements ContestSubmission
                     printException(e);
                     break;
                 }
+
+
+
+//                break;
+
+
+
 
             }
         }

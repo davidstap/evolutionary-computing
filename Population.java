@@ -3,18 +3,22 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 
-
 import java.util.Random;
 import java.util.function.Function;
+import java.util.HashMap;
 
 public class Population
 {
 
     // Genome length.
-    private static final int dim = 10;
+    public static final int dim = 10;
 
     private Population.Individual[] individuals;
     private Function<double[], Object> evaluationFunction;
+
+    /**************************************************************************
+        Constructors
+    **************************************************************************/
 
     // XXX should probably be temporary?
     public Population()
@@ -74,53 +78,9 @@ public class Population
         evaluationFunction = evaluationFunction_;
     }
 
-    // Returns copied list of individuals in population.
-    public Individual[] getIndividuals()
-    {
-        return individuals.clone();
-    }
-
-    // Evaluates members of population keeping track of number of total
-    // evaluations, returns new total number of evaluations. If evaluations
-    // limit is exceeded, deletes not-evaluated individuals from population.
-    public int evaluate(int evals, int evaluations_limit)
-    {
-        for (int i = 0; i < individuals.length; i++)
-        {
-            // Check for exceeding of evaluations limit.
-            if (evals >= evaluations_limit)
-            {
-                // Discard not-evaluated part of population.
-                if (i == 0)
-                {
-                    individuals = new Individual[0];
-                }
-                else
-                {
-                    individuals = Arrays.copyOfRange(individuals, 0, i);
-                }
-                break;
-            }
-            // Evaluate individual.
-            individuals[i].fitness = (double) evaluationFunction.apply(
-                    individuals[i].getGenome());
-            evals++;
-        }
-        return evals;
-    }
-
-    public Individual[] parentSelection(int k)
-    {
-        return Selection.greedy(this.getIndividuals(), k);
-    }
-
-    public Individual[] recombination(
-            Individual[] individuals, Random rnd)
-            throws ArrayIndexOutOfBoundsException, IllegalArgumentException
-    {
-        return Recombination.recombination(
-                individuals, rnd, Recombination.TYPE.ONEPOINT);
-    }
+    /**************************************************************************
+        ???
+    **************************************************************************/
 
     // TODO move to Selection.java.
     // Selects n parents based on Roulette Wheel and ranking selection.
@@ -286,11 +246,63 @@ public class Population
         return candidates;
     }
 
+    /**************************************************************************
+        Main evolution steps
+    **************************************************************************/
+
+    // Evaluates members of population keeping track of number of total
+    // evaluations, returns new total number of evaluations. If evaluations
+    // limit is exceeded, deletes not-evaluated individuals from population.
+    public int evaluate(int evals, int evaluations_limit)
+    {
+        for (int i = 0; i < individuals.length; i++)
+        {
+            // Check for exceeding of evaluations limit.
+            if (evals >= evaluations_limit)
+            {
+                // Discard not-evaluated part of population.
+                if (i == 0)
+                {
+                    individuals = new Individual[0];
+                }
+                else
+                {
+                    individuals = Arrays.copyOfRange(individuals, 0, i);
+                }
+                break;
+            }
+            // Evaluate individual.
+            individuals[i].fitness = (double) evaluationFunction.apply(
+                    individuals[i].getGenome());
+            evals++;
+        }
+        return evals;
+    }
+
+    public Individual[] parentSelection(int k)
+    {
+        return Selection.greedy(this.getIndividuals(), k);
+    }
+
+    public Individual[] recombination(
+            Individual[] individuals, Random rnd)
+            throws ArrayIndexOutOfBoundsException, IllegalArgumentException
+    {
+        return Recombination.recombination(
+                individuals, rnd, Recombination.TYPE.ONEPOINT);
+    }
+
     // Mutates all individuals in the population.
     // Added mutation method to give control over type of mutation
     // TODO difference normal_ and normal?
-    public void mutate(Random rnd, String mutation_method)
+    public void mutate(Random rnd, Mutation.TYPE mutationType,
+            HashMap<String, Double> params)
     {
+        for (Individual individual : individuals)
+        {
+            individual.mutate(rnd, mutationType, params);
+        }
+        /*
         switch(mutation_method)
         {
             case "normal":
@@ -306,6 +318,7 @@ public class Population
                 }
                 break;
         }
+        */
     }
 
     // Applies survival selection onto population.
@@ -317,16 +330,9 @@ public class Population
         individuals = selected;
     }
 
-    // Returns maximal fitness value found in the population.
-    public double getMaxFitness()
-    {
-        if (individuals.length > 0)
-        {
-            sort();
-            return individuals[0].fitness;
-        }
-        return 0.0;
-    }
+    /**************************************************************************
+        Sorting
+    **************************************************************************/
 
     // Sorts list of individuals from largest fitness value to smallest.
     public static Individual[] sort(Individual[] individuals_)
@@ -354,6 +360,27 @@ public class Population
     public void reverseSort()
     {
         individuals = reverseSort(individuals);
+    }
+
+    /**************************************************************************
+        Other
+    **************************************************************************/
+
+    // Returns copied list of individuals in population.
+    public Individual[] getIndividuals()
+    {
+        return individuals.clone();
+    }
+
+    // Returns maximal fitness value found in the population.
+    public double getMaxFitness()
+    {
+        if (individuals.length > 0)
+        {
+            sort();
+            return individuals[0].fitness;
+        }
+        return 0.0;
     }
 
     public int size()
@@ -388,7 +415,10 @@ public class Population
         public double selectionRanking;
         // ranking of individual. Note: worst rank = 0, best rank = mu-1
         public int rank;
-        
+
+        /**********************************************************************
+            Constructors
+        **********************************************************************/
 
         // Basic setting of default variables.
         private void init()
@@ -426,23 +456,50 @@ public class Population
             sigmas = sigmas_;
         }
 
-        // Returns clone of individuals genome.
-        public double[] getGenome()
-        {
-            return genome.clone();
-        }
+        /**********************************************************************
+            Mutation
+        **********************************************************************/
 
-        // Returns clone of individuals sigma values.
-        public double[] getSigmas()
+        public void mutate(Random rnd, Mutation.TYPE mutationType,
+            HashMap<String, Double> params)
         {
-            return sigmas.clone();
+            switch(mutationType)
+            {
+            
+                case GAUSSIAN:
+                    genome = Mutation.gaussian(
+                            getGenome(), rnd, minR, maxR, params);
+                    break;
+                /*
+                case NORMAL:
+                    String param = Mutation.PARAM.NORMAL_FACTOR.toString();
+                    double factor = params.containsKey(param) ?
+                            params.get(param) : 1.0;
+                    genome = Mutation.normal(
+                            getGenome(), rnd, factor, minR, maxR);
+                    break;
+                    */
+                    
+                case UNCORRELATED:
+                    double[][] res = Mutation.uncorrelated(
+                            getGenome(), getSigmas(), rnd, minR, maxR, params);
+                    genome = res[0];
+                    sigmas = res[1];
+                    break;
+                default:
+                    System.out.println(
+                            "UNKNOWN MUTATION TYPE: " + mutationType);
+                    System.exit(1);
+            }
         }
 
         // Applies mutation on individual.
         public void mutate(Random rnd)
         {
             double[][] res = Mutation.uncorrelated(
-                    getGenome(), getSigmas(), rnd, minR, maxR);
+                    getGenome(), getSigmas(), rnd, minR, maxR, 1.0/dim,
+                    1.0 / Math.sqrt(2 * Math.sqrt(dim)),
+                    1.0 / Math.sqrt(2 * dim), 0.01);
             genome = res[0];
             sigmas = res[1];
         }
@@ -461,11 +518,39 @@ public class Population
             }
         }
 
+        /**********************************************************************
+            Other
+        **********************************************************************/
+
+        // Returns clone of individuals genome.
+        public double[] getGenome()
+        {
+            return genome.clone();
+        }
+
+        // Returns clone of individuals sigma values.
+        public double[] getSigmas()
+        {
+            return sigmas.clone();
+        }
+
         // Rounds value v on n decimals.
         private double round(double v, int n)
         {
             return Math.round(v * Math.pow(10, n)) / Math.pow(10, n);
         }
+
+        @Override
+        public int compareTo(Individual individual)
+        {
+            return Double.compare(fitness, individual.fitness);
+        }
+
+
+
+
+
+/*
 
         public String toString()
         {
@@ -481,7 +566,9 @@ public class Population
             }
             return s.substring(0, s.length() - 2) + "]";
         }
-/*
+*/
+
+
         public String toString()
         {
             String s = Double.toString(
@@ -495,12 +582,7 @@ public class Population
             }
             return s.substring(0, s.length() - 2) + "]";
         }
-*/
-        @Override
-        public int compareTo(Individual individual)
-        {
-            return Double.compare(fitness, individual.fitness);
-        }
+
 
     }
 

@@ -4,9 +4,17 @@ import java.util.Random;
 public class Selection
 {
 
-// TODO add greedy and roulette selection from parents (in Population)
-// TODO add uniform selection
+// TODO add roulette selection from parents (in Population)
 // TODO reduce as many selections to working with only one Individual[]
+
+    // FIXME ELITISM?
+    public enum TYPE {
+        UNIFORM, GREEDY, ROUNDROBIN, GENITOR, MUPLAMBDA, MUCLAMBDA
+    }
+
+    /**************************************************************************
+       Private functions
+    **************************************************************************/
 
     // Combines two lists of individuals.
     private static Population.Individual[] individualsAND(
@@ -84,6 +92,16 @@ public class Selection
         return individuals;
     }
 
+    /**************************************************************************
+       One-input-list selection
+    **************************************************************************/
+
+    /* TODO
+    // Selects k individuals based on Roulette Wheel and ranking selection.
+    public static Population.Individual[] rouletteWheel(
+            Population.Individuals[] individuals, int k, double s)
+    */
+
     // Uniformly picks k individuals from the population.
     public static Population.Individual[] uniform(
             Population.Individual[] individuals_, Random rnd, int k)
@@ -106,12 +124,31 @@ public class Selection
         individuals = Population.sort(individuals);
         return Arrays.copyOfRange(individuals, 0, k);
     }
-    
-    /* TODO
-    // Selects k individuals based on Roulette Wheel and ranking selection.
-    public static Population.Individual[] rouletteWheel(
-            Population.Individuals[] individuals, int k, double s)
-    */
+
+    // TODO NEEDS TESTING
+    // Compare individual each individual to q other individuals,
+    // return in order of best to worst scoring individuals.
+    public static Population.Individual[] roundRobin(
+            Population.Individual[] individuals, int q, Random rnd)
+    {
+        int[] wins = new int[individuals.length];
+        for (int i = 0; i < individuals.length; i++)
+        {
+            for (int j = 0; j < q; j++)
+            {
+                if (individuals[i].compareTo(individuals[rnd.nextInt()]) == 1)
+                {
+                    wins[i]++;
+                }
+            }
+        }
+        return individualsBubbleSort(individuals, wins);
+    }
+
+
+    /**************************************************************************
+       Two-input-list selection
+    **************************************************************************/
 
     // TODO NEEDS TESTING
     // Survival selection Genitor.
@@ -124,13 +161,58 @@ public class Selection
         {
             throw new ArrayIndexOutOfBoundsException("\n\t" +
                     Selection.class.getName() + "::genitor: " +
-                    "children.length > parents.length");
+                    "children.length > parents.length\n");
         }
         parents = Population.sort(parents);
         Population.Individual[] individuals = Arrays.copyOfRange(
                 parents, 0, parents.length - children.length);
         return individualsAND(individuals, children);
     }
+
+    // TODO NEEDS TESTING
+    // Compare individual each individual to q other individuals,
+    // return best scoring individuals.
+    public static Population.Individual[] survivalRoundRobin(
+            Population.Individual[] parents, Population.Individual[] children,
+            int q, Random rnd)
+    {
+        Population.Individual[] individuals = individualsAND(parents, children);
+        individuals = roundRobin(individuals, q, rnd);
+        return Arrays.copyOfRange(individuals, 0, parents.length);
+    }
+
+    // Survival selection (mu + lambda).
+    // Picks best individuals from entire pool of parents + children
+    // and sets them as the new population.
+    public static Population.Individual[] mu_plus_lambda(
+            Population.Individual[] parents, Population.Individual[] children)
+    {
+        Population.Individual[] individuals = individualsAND(
+            parents, children);
+        // Return best individuals.
+        individuals = Population.sort(individuals);
+        return Arrays.copyOfRange(individuals, 0, parents.length);
+    }
+
+    // Survival selection (mu, lambda)
+    // Picks best individuals from children
+    public static Population.Individual[] mu_comma_lambda(
+            Population.Individual[] parents, Population.Individual[] children)
+            throws ArrayIndexOutOfBoundsException
+    {
+        if (children.length < parents.length)
+        {
+            throw new ArrayIndexOutOfBoundsException("\n\t" +
+                    Selection.class.getName() + "::mu_comma_lambda: " +
+                    "children.length < parents.length\n");
+        }
+        children = Population.sort(children);
+        return Arrays.copyOfRange(children, 0, parents.length);
+    }
+
+    /**************************************************************************
+       Other selection
+    **************************************************************************/
 
     // TODO NEEDS TESTING
     // Returns best individual from given list of individuals.
@@ -163,66 +245,5 @@ public class Selection
         return individuals;
     }
 
-    // TODO NEEDS TESTING
-    // Compare individual each individual to q other individuals,
-    // return in order of best to worst scoring individuals.
-    public static Population.Individual[] roundRobin(
-            Population.Individual[] individuals, int q, Random rnd)
-    {
-        int[] wins = new int[individuals.length];
-        for (int i = 0; i < individuals.length; i++)
-        {
-            for (int j = 0; j < q; j++)
-            {
-                if (individuals[i].compareTo(individuals[rnd.nextInt()]) == 1)
-                {
-                    wins[i]++;
-                }
-            }
-        }
-        return individualsBubbleSort(individuals, wins);
-    }
-
-    // TODO NEEDS TESTING
-    // Compare individual each individual to q other individuals,
-    // return best scoring individuals.
-    public static Population.Individual[] survivalRoundRobin(
-            Population.Individual[] parents, Population.Individual[] children,
-            int q, Random rnd)
-    {
-        Population.Individual[] individuals = individualsAND(parents, children);
-        individuals = roundRobin(individuals, q, rnd);
-        return Arrays.copyOfRange(individuals, 0, parents.length);
-    }
-
-    // Survival selection (mu + lambda).
-    // Picks best individuals from entire pool of parents + children
-    // and sets them as the new population.
-    public static Population.Individual[] mu_plus_lambda(
-            Population.Individual[] parents, Population.Individual[] children)
-    {
-        Population.Individual[] individuals = individualsAND(
-            parents, children);
-        // Return best individuals.
-        individuals = Population.sort(individuals);
-        return Arrays.copyOfRange(individuals, 0, parents.length);
-    }
-
-    // TODO NEEDS TESTING
-    // Survival selection (mu, lambda)
-    // Picks best individuals from children
-    public static Population.Individual[] mu_comma_lambda(
-            Population.Individual[] parents, Population.Individual[] children)
-            throws ArrayIndexOutOfBoundsException
-    {
-        if (children.length < parents.length)
-        {
-            throw new ArrayIndexOutOfBoundsException("\n\t" +
-                    Selection.class.getName() + "::mu_comma_lambda: " +
-                    "children.length < parents.length");
-        }
-        children = Population.sort(children);
-        return Arrays.copyOfRange(children, 0, parents.length);
-    }
-
 }
+
