@@ -92,7 +92,6 @@ public class Selection
         for (int i = 0; i < k; i++)
         {
             int P = (int)(rnd.nextDouble() * individuals_.length);
-            System.out.println(P);
             individuals[i] =
                     individuals_[P];
         }

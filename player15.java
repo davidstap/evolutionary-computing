@@ -94,14 +94,16 @@ public class player15 implements ContestSubmission
 
         evaluations_limit_ = 10000;
 
-        String recomb_method = "uniform";
+        Recombination.TYPE recomb_method = Recombination.TYPE.SIMPLEARITHMETIC;
         String mutation_method = "uncorrelated";
+        String selection_method = "tournament";
+        String survival_method = "";
 
 
         // Test island
         // (XXX Uses different random so values in myPop stay the same
         //      while Island.java develops.)
-        Island island = new Island(recomb_method, mutation_method, popSize, evaluation_::evaluate, islandRnd_);
+        Island island = new Island(recomb_method, mutation_method, selection_method, survival_method, popSize, evaluation_::evaluate, islandRnd_);
         island.evolutionCycle(nChildren);
 
 
@@ -113,7 +115,7 @@ public class player15 implements ContestSubmission
             // calculate fitness
             while(evals < evaluations_limit_){
 
-                if (print == true)
+                if (print)
                 {
                     myPop.sort();
                     myPop.print();
@@ -122,7 +124,7 @@ public class player15 implements ContestSubmission
                 // TODO: add tournament selection
                 // ---------- Parent Selection ----------
                 Population.Individual[] parents =
-                        myPop.parentSelection(nChildren);
+                        myPop.parentSelection(nChildren, rnd_, selection_method);
 
 //                myPop.selectParentsTournament(nChildren, k, c);
 //                Population.Individual[] parents =
@@ -171,7 +173,7 @@ public class player15 implements ContestSubmission
             }
         }
 
-        if (print == true)
+        if (print)
         {
             myPop.sort();
             myPop.print();

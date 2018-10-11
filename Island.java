@@ -3,18 +3,22 @@ import java.util.function.Function;
 
 public class Island {
     private Population subpop;
-    private String recomb_method;
+    private Recombination.TYPE  recomb_method;
     private String mutation_method;
+    private String selection_method;
+    private String survival_method;
     private Random rnd;
     private Function<double[], Object> evaluationFunction_;
 
     public Island (
-            String recomb_method, String mutation_method, int n,
+            Recombination.TYPE recomb_method, String mutation_method, String selection_method, String survival_method, int n,
             Function<double[], Object> evaluationFunction_, Random rnd)
     {
         this.subpop = new Population(n, evaluationFunction_, rnd);
         this.recomb_method = recomb_method;
         this.mutation_method = mutation_method;
+        this.selection_method = selection_method;
+        this.survival_method = survival_method;
         this.rnd = rnd;
         this.evaluationFunction_ = evaluationFunction_;
     }
@@ -23,12 +27,12 @@ public class Island {
     // and survivor selection
     void evolutionCycle(int nChildren)
     {
-        Population.Individual[] parents = this.subpop.parentSelection(nChildren);
+        Population.Individual[] parents = this.parent_selection(nChildren);
         Population.Individual[] recombChildren = this.recombination(parents);
-        int[] N = {nChildren};
         Population childPop = new Population(
                 recombChildren, this.evaluationFunction_);
         childPop = this.mutate(childPop);
+        survival_selection(childPop);
     }
 
 
@@ -42,20 +46,24 @@ public class Island {
     private Population.Individual[] recombination(
             Population.Individual[] parents)
     {
-        switch(this.recomb_method)
+        return Recombination.recombination(parents, this.rnd, this.recomb_method);
+    }
+
+    private Population.Individual[] parent_selection(int nChildren)
+    {
+        return this.subpop.parentSelection(nChildren, this.rnd, this.selection_method);
+    }
+
+//    TODO ADD DIFFERENT SURVIVAL SELECTION METHODS
+    private void survival_selection(Population childPop)
+    {
+        switch(this.survival_method)
         {
-            case "simpleArithmetic":
-                return Recombination.recombination(
-                        parents, this.rnd, Recombination.TYPE.SIMPLEARITHMETIC);
-            case "uniform":
-                return Recombination.recombination(
-                        parents, this.rnd, Recombination.TYPE.UNIFORM);
-            case "wholeArithmetic":
-                return Recombination.recombination(
-                        parents, this.rnd, Recombination.TYPE.WHOLEARITHMETIC);
+            case "":
+                this.subpop.survival(childPop, this.rnd);
+                break;
             default:
-                System.out.println("No valid recombination method selected");
+                System.out.println("No valid survival selection mechanism found");
         }
-        return null;
     }
 }

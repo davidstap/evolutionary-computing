@@ -109,9 +109,26 @@ public class Population
         return evals;
     }
 
-    public Individual[] parentSelection(int k)
+    public Individual[] parentSelection(int k, Random rnd, String selection_method)
     {
-        return Selection.greedy(this.getIndividuals(), k);
+//        TODO tournament exceeds population size / parameters not hardcoded!!!
+        switch(selection_method)
+        {
+            case "greedy":
+                return Selection.greedy(this.getIndividuals(), k);
+            case "uniform":
+                return Selection.uniform(this.getIndividuals(), rnd, k);
+            case "roulette":
+                double S = 2.0;
+                return parentSelectionRouletteWheel(k, S);
+            case "tournament":
+                int the_real_k = 6;
+                int c = 2;
+                return selectParentsTournament(k, the_real_k, c);
+            default:
+                System.out.println("Parent selection type not found");
+        }
+        return null;
     }
 
     public Individual[] recombination(
