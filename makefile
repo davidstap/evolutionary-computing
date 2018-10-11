@@ -1,11 +1,16 @@
 INFO := MainClass.txt
 FILE := $(lastword $(shell cat $(INFO)))
 
-FILES := $(FILE) Mutation Population Recombination Selection Island
+FILES := $(FILE) Mutation Population Recombination Selection #Island
 JFILES := $(patsubst %,%.java,$(FILES))
 NESTCS := $(foreach file,$(FILES),$(wildcard $(file)$$*.class))
 CFILES := $(subst $$,\$$,$(patsubst %,%.class,$(FILES)) $(NESTCS))
 
+FMAIN := fitting
+FFILES := $(FMAIN) FitPopulation
+JFFILES := $(patsubst %,%.java,$(FFILES))
+NESTCFS := $(foreach file,$(FFILES),$(wildcard $(file)$$*.class))
+CFFILES := $(subst $$,\$$,$(patsubst %,%.class,$(FFILES)) $(NESTCFS))
 
 all:
 	$(shell make compile)
@@ -16,6 +21,12 @@ compile:
 
 submission:
 	jar cmf $(INFO) submission.jar $(CFILES)
+
+compilef:
+	javac $(JFFILES)
+
+fit:
+	java $(FMAIN)
 
 test:
 #	make -s testo
@@ -39,4 +50,4 @@ tests:
 	java -jar testrun.jar -submission=$(FILE) -evaluation=SchaffersEvaluation -seed=1
 
 clean:
-	rm -rf *~ submission.jar tmp $(CFILES)
+	rm -rf *~ submission.jar tmp $(CFILES) $(CFFILES)
