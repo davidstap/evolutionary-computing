@@ -100,13 +100,20 @@ public class player15 implements ContestSubmission
 
         evaluations_limit_ = 10000;
 
-        String recomb_method = "uniform";
-        String mutation_method = "uncorrelated";
+
+        // recombination = uniform
+        // parent selection = greedy
+        // mutation = uncorrelated
+        // survival selection = (mu,lambda)
+        // make testc ==> 9.999938929480702
 
         // Setting recombination type and parameters.
         Recombination.TYPE recombinationType = Recombination.TYPE.UNIFORM;
         HashMap<String, Double> recombinationParams =
                 new HashMap<String, Double>();
+
+        // TODO Setting parent selection type and parameters.
+        String parentSelectionType = "greedy";
 
         // Setting mutation type and parameters.
         Mutation.TYPE mutationType = Mutation.TYPE.UNCORRELATED;
@@ -114,12 +121,26 @@ public class player15 implements ContestSubmission
         mutationParams.put(Mutation.PARAM.MUTATIONRATE.toString(),
                 1.0 / Population.dim);
 
+        // TODO Setting survival selection type and parameters.
+        
+
+
+
+        // XXX Parameters used in Island model (for now split from rest).
+        Recombination.TYPE recomb_method = Recombination.TYPE.SIMPLEARITHMETIC;
+        Mutation.TYPE mutation_method = Mutation.TYPE.UNCORRELATED;
+        String selection_method = "tournament";
+        String survival_method = "";
+
 
         // Test island
         // (XXX Uses different random so values in myPop stay the same
         //      while Island.java develops.)
-//        Island island = new Island(recomb_method, mutation_method, popSize, evaluation_::evaluate, islandRnd_);
-//        island.evolutionCycle(nChildren);
+
+
+        Island island = new Island(recomb_method, mutation_method, selection_method, survival_method, popSize, evaluation_::evaluate, islandRnd_);
+        island.evolutionCycle(nChildren);
+
 
 
         // Initialize population
@@ -130,7 +151,7 @@ public class player15 implements ContestSubmission
             // calculate fitness
             while(evals < evaluations_limit_){
 
-                if (print == true)
+                if (print)
                 {
                     myPop.sort();
                     myPop.print();
@@ -139,7 +160,8 @@ public class player15 implements ContestSubmission
                 // TODO: add tournament selection
                 // ---------- Parent Selection ----------
                 Population.Individual[] parents =
-                        myPop.parentSelection(nChildren);
+                        myPop.parentSelection(nChildren, rnd_,
+                        parentSelectionType);
 
 //                myPop.selectParentsTournament(nChildren, k, c);
 //                Population.Individual[] parents =
@@ -174,7 +196,6 @@ public class player15 implements ContestSubmission
 
                 evals = childPop.evaluate(evals, evaluations_limit_);
 
-                // TODO: add several survival mechanisms
                 // ---------- Survivor selection
                 try
                 {
@@ -196,7 +217,7 @@ public class player15 implements ContestSubmission
             }
         }
 
-        if (print == true)
+        if (print)
         {
             myPop.sort();
             myPop.print();

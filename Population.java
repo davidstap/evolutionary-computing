@@ -223,7 +223,6 @@ public class Population
         return numbers;
     }
 
-
     // Randomly sample over the individuals with the use of a list in range 0 to k
     public Individual[] pickNRandom(int n, List<Integer> numbers) 
     {
@@ -279,9 +278,26 @@ public class Population
         return evals;
     }
 
-    public Individual[] parentSelection(int k)
+    public Individual[] parentSelection(int k, Random rnd, String selection_method)
     {
-        return Selection.greedy(this.getIndividuals(), k);
+//        TODO tournament exceeds population size / parameters not hardcoded!!!
+        switch(selection_method)
+        {
+            case "greedy":
+                return Selection.greedy(this.getIndividuals(), k);
+            case "uniform":
+                return Selection.uniform(this.getIndividuals(), rnd, k);
+            case "roulette":
+                double S = 2.0;
+                return parentSelectionRouletteWheel(k, S);
+            case "tournament":
+                int the_real_k = 6;
+                int c = 2;
+                return selectParentsTournament(k, the_real_k, c);
+            default:
+                System.out.println("Parent selection type not found");
+        }
+        return null;
     }
 
     public Individual[] recombination(Individual[] individuals, Random rnd,
@@ -293,9 +309,13 @@ public class Population
                 individuals, rnd, recombinationType, params);
     }
 
+    // Calls mutation with default parameters.
+    public void mutate(Random rnd, Mutation.TYPE mutationType)
+    {
+        mutate(rnd, mutationType, new HashMap<String, Double>());
+    }
+
     // Mutates all individuals in the population.
-    // Added mutation method to give control over type of mutation
-    // TODO difference normal_ and normal?
     public void mutate(Random rnd, Mutation.TYPE mutationType,
             HashMap<String, Double> params)
     {
@@ -303,23 +323,6 @@ public class Population
         {
             individual.mutate(rnd, mutationType, params);
         }
-        /*
-        switch(mutation_method)
-        {
-            case "normal":
-                for (Individual individual : individuals)
-                {
-                    individual.mutate_normal(rnd);
-                }
-                break;
-            case "uncorrelated":
-                for (Individual individual : individuals)
-                {
-                    individual.mutate(rnd);
-                }
-                break;
-        }
-        */
     }
 
     // Applies survival selection onto population.
