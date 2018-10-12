@@ -82,14 +82,16 @@ public class player15 implements ContestSubmission
 
         // EA Parameters
         int evals = 0;
+
         int popSize = 12;
+        int nChildren = popSize / 2;
+
+        // TODO Put into the Hashmaps when functions are moved to Selection.java
         // Tournament selection candidates
         int k = 4;
         // constant for proportional fitness
         int c = 2;
 //        int nParents = popSize / 2;
-        // 2 parents produce 2 children
-        int nChildren = popSize / 2;
         // Roulette wheel parameter S. Range: 1.0 < s  2.0
         double sRW = 2.0;
 
@@ -101,19 +103,24 @@ public class player15 implements ContestSubmission
         evaluations_limit_ = 10000;
 
 
+        // XXX For making sure that result stays consistent throughout edits.
         // recombination = uniform
         // parent selection = greedy
         // mutation = uncorrelated
         // survival selection = (mu,lambda)
         // make testc ==> 9.999938929480702
 
+        // Setting parent selection type and parameters.
+        Selection.TYPE parentSelectionType = Selection.TYPE.GREEDY;
+        HashMap<String, Double> parentSelectionParams =
+                new HashMap<String, Double>();
+        parentSelectionParams.put(Selection.PARAM.PARENT_K.toString(),
+                (double)nChildren);
+
         // Setting recombination type and parameters.
         Recombination.TYPE recombinationType = Recombination.TYPE.UNIFORM;
         HashMap<String, Double> recombinationParams =
                 new HashMap<String, Double>();
-
-        // TODO Setting parent selection type and parameters.
-        String parentSelectionType = "greedy";
 
         // Setting mutation type and parameters.
         Mutation.TYPE mutationType = Mutation.TYPE.UNCORRELATED;
@@ -121,22 +128,22 @@ public class player15 implements ContestSubmission
         mutationParams.put(Mutation.PARAM.MUTATIONRATE.toString(),
                 1.0 / Population.dim);
 
-        // TODO Setting survival selection type and parameters.
-        
+        // Setting survival selection type and parameters.
+        Selection.TYPE survivalSelectionType = Selection.TYPE.MUPLUSLAMBDA;
+        HashMap<String, Double> survivalSelectionParams =
+                new HashMap<String, Double>();
 
 
 
         // XXX Parameters used in Island model (for now split from rest).
         Recombination.TYPE recomb_method = Recombination.TYPE.SIMPLEARITHMETIC;
         Mutation.TYPE mutation_method = Mutation.TYPE.UNCORRELATED;
-        String selection_method = "tournament";
-        String survival_method = "";
-
+        Selection.TYPE selection_method = Selection.TYPE.TOURNAMENT;
+        Selection.TYPE survival_method = Selection.TYPE.MUPLUSLAMBDA;
 
         // Test island
         // (XXX Uses different random so values in myPop stay the same
         //      while Island.java develops.)
-
 
         Island island = new Island(recomb_method, mutation_method, selection_method, survival_method, popSize, evaluation_::evaluate, islandRnd_);
         island.evolutionCycle(nChildren);
@@ -151,28 +158,53 @@ public class player15 implements ContestSubmission
             // calculate fitness
             while(evals < evaluations_limit_){
 
-                if (print)
-                {
-                    myPop.sort();
-                    myPop.print();
-                }
-
-                // TODO: add tournament selection
-                // ---------- Parent Selection ----------
-                Population.Individual[] parents =
-                        myPop.parentSelection(nChildren, rnd_,
-                        parentSelectionType);
-
-//                myPop.selectParentsTournament(nChildren, k, c);
-//                Population.Individual[] parents =
-//                        myPop.parentSelectionRouletteWheel(nChildren, sRW);
-
-                // ---------- Recombination ----------
-                Population.Individual[] children;
                 try
                 {
-                    children = myPop.recombination(parents, rnd_,
-                            recombinationType, recombinationParams);
+
+
+                    if (print)
+                    {
+                        myPop.sort();
+                        myPop.print();
+                    }
+
+                    // TODO: add tournament selection
+                    // ---------- Parent Selection ----------
+                    Population.Individual[] parents =
+                            myPop.parentSelection(rnd_,
+                            parentSelectionType, parentSelectionParams);
+
+//                    myPop.selectParentsTournament(nChildren, k, c);
+//                    Population.Individual[] parents =
+//                            myPop.parentSelectionRouletteWheel(nChildren, sRW);
+
+                    // ---------- Recombination ----------
+                    Population.Individual[] children;
+                        children = myPop.recombination(parents, rnd_,
+                                recombinationType, recombinationParams);
+
+
+                    Population childPop = new Population(
+//                            parents, new int[]{nChildren}, evaluation_::evaluate);
+                            children, evaluation_::evaluate);
+//                            new Population.Individual[]{myPop.getIndividuals()[0]}, new int[]{nChildren}, evaluation_::evaluate);
+
+
+                    // ---------- Mutation ----------  
+                    childPop.mutate(rnd_, mutationType, mutationParams);
+
+                    evals = childPop.evaluate(evals, evaluations_limit_);
+
+                    // ---------- Survivor selection
+                    myPop.survival(childPop, rnd_,
+                            survivalSelectionType, survivalSelectionParams);
+
+
+
+//                break;
+
+
+
                 }
                 catch (ArrayIndexOutOfBoundsException e)
                 {
@@ -184,34 +216,6 @@ public class player15 implements ContestSubmission
                     printException(e);
                     break;
                 }
-
-                Population childPop = new Population(
-//                        parents, new int[]{nChildren}, evaluation_::evaluate);
-                        children, evaluation_::evaluate);
-//                        new Population.Individual[]{myPop.getIndividuals()[0]}, new int[]{nChildren}, evaluation_::evaluate);
-
-
-                // ---------- Mutation ----------  
-                childPop.mutate(rnd_, mutationType, mutationParams);
-
-                evals = childPop.evaluate(evals, evaluations_limit_);
-
-                // ---------- Survivor selection
-                try
-                {
-                    myPop.survival(childPop, rnd_);
-                }
-                catch (ArrayIndexOutOfBoundsException e)
-                {
-                    printException(e);
-                    break;
-                }
-
-
-
-//                break;
-
-
 
 
             }

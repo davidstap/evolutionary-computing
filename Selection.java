@@ -1,5 +1,6 @@
 import java.util.Arrays;
 import java.util.Random;
+import java.util.HashMap;
 
 public class Selection
 {
@@ -8,8 +9,16 @@ public class Selection
 // TODO reduce as many selections to working with only one Individual[]
 
     // FIXME ELITISM?
+    // Implemented types of selection.
     public enum TYPE {
-        UNIFORM, GREEDY, ROUNDROBIN, GENITOR, MUPLAMBDA, MUCLAMBDA
+        UNIFORM, GREEDY, ROUNDROBIN, ROULETTE, TOURNAMENT,
+        GENITOR, MUPLUSLAMBDA, MUCOMMALAMBDA
+    }
+
+    // Potential selection parameters.
+    public enum PARAM {
+        PARENT_K,
+        ROUNDROBIN_Q
     }
 
     /**************************************************************************
@@ -93,7 +102,7 @@ public class Selection
     }
 
     /**************************************************************************
-       One-input-list selection
+       Parent selection
     **************************************************************************/
 
     /* TODO
@@ -101,6 +110,18 @@ public class Selection
     public static Population.Individual[] rouletteWheel(
             Population.Individuals[] individuals, int k, double s)
     */
+
+    // Calls uniform after unpacking parameters.
+    public static Population.Individual[] uniform(
+            Population.Individual[] individuals, Random rnd,
+            HashMap<String, Double> params)
+    {
+        String param = PARAM.PARENT_K.toString();
+        int k = params.containsKey(param) ?
+                params.get(param).intValue() :
+                individuals.length;
+        return uniform(individuals, rnd, k);
+    }
 
     // Uniformly picks k individuals from the population.
     public static Population.Individual[] uniform(
@@ -116,6 +137,18 @@ public class Selection
         return individuals;
     }
 
+    // Calls greedy after unpacking parameters.
+    public static Population.Individual[] greedy(
+            Population.Individual[] individuals,
+            HashMap<String, Double> params)
+    {
+        String param = PARAM.PARENT_K.toString();
+        int k = params.containsKey(param) ?
+                params.get(param).intValue() :
+                individuals.length;
+        return greedy(individuals, k);
+    }
+
     // Selects k best individuals.
     public static Population.Individual[] greedy(
             Population.Individual[] individuals, int k)
@@ -124,11 +157,23 @@ public class Selection
         return Arrays.copyOfRange(individuals, 0, k);
     }
 
+    // Calls roundRobin after unpacking parameters.
+    public static Population.Individual[] roundRobin(
+            Population.Individual[] individuals, Random rnd,
+            HashMap<String, Double> params)
+    {
+        String param = PARAM.ROUNDROBIN_Q.toString();
+        int q = params.containsKey(param) ?
+                params.get(param).intValue() :
+                individuals.length;
+        return roundRobin(individuals, rnd, q);
+    }
+
     // TODO NEEDS TESTING
     // Compare individual each individual to q other individuals,
     // return in order of best to worst scoring individuals.
     public static Population.Individual[] roundRobin(
-            Population.Individual[] individuals, int q, Random rnd)
+            Population.Individual[] individuals, Random rnd, int q)
     {
         int[] wins = new int[individuals.length];
         for (int i = 0; i < individuals.length; i++)
@@ -146,7 +191,7 @@ public class Selection
 
 
     /**************************************************************************
-       Two-input-list selection
+       Survival selection
     **************************************************************************/
 
     // TODO NEEDS TESTING
@@ -168,15 +213,28 @@ public class Selection
         return individualsAND(individuals, children);
     }
 
+
+    // Calls survivalRoundRobin after unpacking parameters.
+    public static Population.Individual[] survivalRoundRobin(
+            Population.Individual[] parents, Population.Individual[] children, 
+            Random rnd, HashMap<String, Double> params)
+    {
+        String param = PARAM.ROUNDROBIN_Q.toString();
+        int q = params.containsKey(param) ?
+                params.get(param).intValue() :
+                parents.length + children.length;
+        return survivalRoundRobin(parents, children, rnd, q);
+    }
+
     // TODO NEEDS TESTING
     // Compare individual each individual to q other individuals,
     // return best scoring individuals.
     public static Population.Individual[] survivalRoundRobin(
             Population.Individual[] parents, Population.Individual[] children,
-            int q, Random rnd)
+            Random rnd, int q)
     {
         Population.Individual[] individuals = individualsAND(parents, children);
-        individuals = roundRobin(individuals, q, rnd);
+        individuals = roundRobin(individuals, rnd, q);
         return Arrays.copyOfRange(individuals, 0, parents.length);
     }
 

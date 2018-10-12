@@ -278,26 +278,51 @@ public class Population
         return evals;
     }
 
-    public Individual[] parentSelection(int k, Random rnd, String selection_method)
+    public Individual[] parentSelection(Random rnd,
+            Selection.TYPE selectionType,
+            HashMap<String, Double> selectionParams)
     {
 //        TODO tournament exceeds population size / parameters not hardcoded!!!
-        switch(selection_method)
+        Individual[] selection;
+        switch(selectionType)
         {
-            case "greedy":
-                return Selection.greedy(this.getIndividuals(), k);
-            case "uniform":
-                return Selection.uniform(this.getIndividuals(), rnd, k);
-            case "roulette":
+            case UNIFORM:
+                selection = Selection.uniform(
+                        this.getIndividuals(), rnd, selectionParams);
+                break;
+            case GREEDY:
+                selection = Selection.greedy(
+                        this.getIndividuals(), selectionParams);
+                break;
+            case ROUNDROBIN:
+                selection = Selection.roundRobin(
+                        this.getIndividuals(), rnd, selectionParams);
+                break;
+            // FIXME move to Selection.java.
+            case ROULETTE:
+                String param1 = Selection.PARAM.PARENT_K.toString();
+                int k1 = selectionParams.containsKey(param1) ?
+                        selectionParams.get(param1).intValue() :
+                        individuals.length;
                 double S = 2.0;
-                return parentSelectionRouletteWheel(k, S);
-            case "tournament":
+                selection = parentSelectionRouletteWheel(k1, S);
+                break;
+            // FIXME move to Selection.java.
+            case TOURNAMENT:
+                String param2 = Selection.PARAM.PARENT_K.toString();
+                int k2 = selectionParams.containsKey(param2) ?
+                        selectionParams.get(param2).intValue() :
+                        individuals.length;
                 int the_real_k = 6;
                 int c = 2;
-                return selectParentsTournament(k, the_real_k, c);
+                selection = selectParentsTournament(k2, the_real_k, c);
+                break;
             default:
-                System.out.println("Parent selection type not found");
+                throw new IllegalArgumentException("\n\t" +
+                        Population.class.getName() +
+                        ": survival selection type not recognized\n");
         }
-        return null;
+        return selection;
     }
 
     public Individual[] recombination(Individual[] individuals, Random rnd,
@@ -326,12 +351,38 @@ public class Population
     }
 
     // Applies survival selection onto population.
-    public void survival(Population childPopulation, Random rnd)
-            throws ArrayIndexOutOfBoundsException
+    public void survival(Population childPopulation, Random rnd,
+            Selection.TYPE selectionType,
+            HashMap<String, Double> selectionParams)
+            throws ArrayIndexOutOfBoundsException, IllegalArgumentException
     {
-        Individual[] selected = Selection.mu_plus_lambda(
-            this.getIndividuals(), childPopulation.getIndividuals());
-        individuals = selected;
+        Individual[] selection;
+        switch(selectionType) {
+            case GENITOR:
+                selection = Selection.genitor(
+                    this.getIndividuals(), childPopulation.getIndividuals());
+                break;
+            case ROUNDROBIN:
+                selection = Selection.survivalRoundRobin(
+                    this.getIndividuals(), childPopulation.getIndividuals(),
+                    rnd, selectionParams);
+                break;
+            case MUPLUSLAMBDA:
+                selection = Selection.mu_plus_lambda(
+                    this.getIndividuals(), childPopulation.getIndividuals());
+                break;
+            case MUCOMMALAMBDA:
+                selection = Selection.mu_comma_lambda(
+                    this.getIndividuals(), childPopulation.getIndividuals());
+                break;
+            // TODO implement
+            case TOURNAMENT:
+            default:
+                throw new IllegalArgumentException("\n\t" +
+                        Population.class.getName() +
+                        ": survival selection type not recognized\n");
+        }
+        individuals = selection;
     }
 
     /**************************************************************************
@@ -465,7 +516,8 @@ public class Population
         **********************************************************************/
 
         public void mutate(Random rnd, Mutation.TYPE mutationType,
-            HashMap<String, Double> params)
+                HashMap<String, Double> params)
+                throws IllegalArgumentException
         {
             switch(mutationType)
             {
@@ -491,9 +543,9 @@ public class Population
                     sigmas = res[1];
                     break;
                 default:
-                    System.out.println(
-                            "UNKNOWN MUTATION TYPE: " + mutationType);
-                    System.exit(1);
+                    throw new IllegalArgumentException("\n\t" +
+                            Population.class.getName() +
+                            ": mutation type not recognized\n");
             }
         }
 

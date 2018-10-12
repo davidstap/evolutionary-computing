@@ -9,18 +9,22 @@ public class Island {
     private Population subpop;
     private Recombination.TYPE  recomb_method;
     private Mutation.TYPE mutation_method;
-    private String selection_method;
-    private String survival_method;
+    private Selection.TYPE selection_method;
+    private Selection.TYPE survival_method;
     private Random rnd;
     private Function<double[], Object> evaluationFunction_;
 
     // FIXME ADDED TO FIX MERGE CONFLICT
     private HashMap<String, Double> recomb_params =
             new HashMap<String, Double>();
+    private HashMap<String, Double> survival_params =
+            new HashMap<String, Double>();
+    private HashMap<String, Double> selection_params =
+            new HashMap<String, Double>();
 
 
     public Island (
-            Recombination.TYPE recomb_method, Mutation.TYPE mutation_method, String selection_method, String survival_method, int n,
+            Recombination.TYPE recomb_method, Mutation.TYPE mutation_method, Selection.TYPE selection_method, Selection.TYPE survival_method, int n,
             Function<double[], Object> evaluationFunction_, Random rnd)
     {
         this.subpop = new Population(n, evaluationFunction_, rnd);
@@ -60,12 +64,20 @@ public class Island {
 
     private Population.Individual[] parent_selection(int nChildren)
     {
-        return this.subpop.parentSelection(nChildren, this.rnd, this.selection_method);
+        // FIXME changed with addition of Selection.TYPE and Selection.PARAM
+        selection_params.put(Selection.PARAM.PARENT_K.toString(),
+                (double)nChildren);
+        
+        
+        return this.subpop.parentSelection(this.rnd, this.selection_method, this.selection_params);
     }
 
 //    TODO ADD DIFFERENT SURVIVAL SELECTION METHODS
     private void survival_selection(Population childPop)
     {
+        // FIXME changed with addition of Selection.TYPE and Selection.PARAM
+        this.subpop.survival(childPop, this.rnd, this.survival_method, this.survival_params);
+        /*
         switch(this.survival_method)
         {
             case "":
@@ -74,5 +86,6 @@ public class Island {
             default:
                 System.out.println("No valid survival selection mechanism found");
         }
+        */
     }
 }

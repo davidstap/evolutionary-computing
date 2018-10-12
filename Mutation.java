@@ -3,9 +3,12 @@ import java.util.HashMap;
 
 public class Mutation {
 
+    // Implemented types of mutation.
     public enum TYPE {
         GAUSSIAN, UNCORRELATED
     }
+
+    // Potential mutation parameters.
     public enum PARAM {
         MUTATIONRATE,
         GAUSSIAN_MU, GAUSSIAN_SIGMA,
