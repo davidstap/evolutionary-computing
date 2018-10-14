@@ -9,6 +9,9 @@ import java.util.Iterator;
 import java.util.Arrays;
 import java.util.function.Function;
 import java.util.HashMap;
+import java.util.HashSet;
+
+import java.io.IOException;
 
 public class player15 implements ContestSubmission
 {
@@ -74,11 +77,70 @@ public class player15 implements ContestSubmission
         System.out.print("\u001B[0m");
     }
 
+
+    public void handleParams(HashMap<String, Double> params,
+            HashMap<String, Double> parentSelectionParams,
+            HashMap<String, Double> recombinationParams,
+            HashMap<String, Double> mutationParams,
+            HashMap<String, Double> survivalSelectionParams)
+    {
+        double value;
+        HashSet<String> parentSelectionParamsSet = new HashSet<String>();
+        for (Selection.PARAM param : Selection.PARAM.values())
+        {
+            if (param != Selection.PARAM.SURVIVALROUNDROBIN_Q)
+            {
+                parentSelectionParamsSet.add(param.toString());
+            }
+        }
+        HashSet<String> recombinationParamsSet = new HashSet<String>();
+        for (Recombination.PARAM param : Recombination.PARAM.values())
+        {
+            recombinationParamsSet.add(param.toString());
+        }
+        HashSet<String> mutationParamsSet = new HashSet<String>();
+        for (Mutation.PARAM param : Mutation.PARAM.values())
+        {
+            mutationParamsSet.add(param.toString());
+        }
+        HashSet<String> survivalSelectionParamsSet = new HashSet<String>();
+        survivalSelectionParamsSet.add(
+                Selection.PARAM.SURVIVALROUNDROBIN_Q.toString());
+        for (String key : params.keySet())
+        {
+            value = params.get(key);
+            if (parentSelectionParamsSet.contains(key))
+            {
+                parentSelectionParams.put(key, value);
+            }
+            else if (recombinationParamsSet.contains(key))
+            {
+                recombinationParams.put(key, value);
+            }
+            else if (mutationParamsSet.contains(key))
+            {
+                mutationParams.put(key, value);
+            }
+            else if (survivalSelectionParamsSet.contains(key))
+            {
+                survivalSelectionParams.put(key, value);
+            }
+        }
+    }
+
+
     public void run()
     {
         // Run your algorithm here
 
         boolean print = false;
+
+        String paramsData = System.getProperty("params");
+
+        System.out.println("--PARAMSFILE--");
+        System.out.println(paramsData);
+        System.out.println(Population.PARAM.SIZE.toString());
+        System.out.println("--------------");
 
         // EA Parameters
         int evals = 0;
@@ -133,6 +195,30 @@ public class player15 implements ContestSubmission
         HashMap<String, Double> survivalSelectionParams =
                 new HashMap<String, Double>();
 
+
+        if (paramsData != null)
+        {
+            try
+            {
+                String param;
+                HashMap<String, Double> params = InOut.load(paramsData);
+                param = Population.PARAM.SIZE.toString();
+                popSize = params.containsKey(param) ?
+                        params.get(param).intValue() :
+                        popSize;
+                param = Population.PARAM.NCHILDREN.toString();
+                nChildren = params.containsKey(param) ?
+                        params.get(param).intValue() :
+                        nChildren;
+                handleParams(params, parentSelectionParams, recombinationParams,
+                        mutationParams, survivalSelectionParams);
+            }
+            catch(IOException e)
+            {
+                printException(e);
+                return;
+            }
+        }
 
 
         // XXX Parameters used in Island model (for now split from rest).

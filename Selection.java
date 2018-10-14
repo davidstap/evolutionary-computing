@@ -18,7 +18,8 @@ public class Selection
     // Potential selection parameters.
     public enum PARAM {
         PARENT_K,
-        ROUNDROBIN_Q
+        ROUNDROBIN_Q,
+        SURVIVALROUNDROBIN_Q
     }
 
     /**************************************************************************
@@ -219,7 +220,7 @@ public class Selection
             Population.Individual[] parents, Population.Individual[] children, 
             Random rnd, HashMap<String, Double> params)
     {
-        String param = PARAM.ROUNDROBIN_Q.toString();
+        String param = PARAM.SURVIVALROUNDROBIN_Q.toString();
         int q = params.containsKey(param) ?
                 params.get(param).intValue() :
                 parents.length + children.length;

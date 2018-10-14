@@ -10,6 +10,10 @@ import java.util.HashMap;
 public class Population
 {
 
+    public enum PARAM {
+        SIZE, NCHILDREN
+    }
+
     // Genome length.
     public static final int dim = 10;
 

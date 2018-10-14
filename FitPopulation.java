@@ -65,34 +65,14 @@ public class FitPopulation
             fitness = 0;
         }
         
-        // https://stackoverflow.com/questions/26830617/
-        //      java-running-bash-commands
-        private String system(String cmd)
-                throws IOException, InterruptedException
-        {
-            Process p;
-            p = Runtime.getRuntime().exec(cmd);
-            p.waitFor();
-            
-            BufferedReader reader =
-                    new BufferedReader(
-                            new InputStreamReader(p.getInputStream()));
-            StringBuffer output = new StringBuffer();
-            
-            String line = "";
-            while ((line = reader.readLine()) != null) {
-                output.append(line + "\n");
-            }
-            return output.toString();
-        }
-        
         public void evaluate()
         {
             fitness++;
             
             try
             {
-                System.out.print(system("echo " + Double.toString(fitness)));
+                System.out.print(
+                        InOut.command("echo " + Double.toString(fitness)));
             }
             catch (IOException e)
             {

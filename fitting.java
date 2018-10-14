@@ -9,6 +9,7 @@ public class fitting
         
         int popSize = 2;
         
+        /*
         HashMap<String, String> types = new HashMap<String, String>();
         types.put(FitPopulation.SETTABLE.PARENTSELECTION.toString(),
                 Selection.TYPE.UNIFORM.toString());
@@ -18,6 +19,7 @@ public class fitting
                 Mutation.TYPE.UNCORRELATED.toString());
         types.put(FitPopulation.SETTABLE.SURVIVALSELECTION.toString(),
                 Selection.TYPE.MUCLAMBDA.toString());
+        */
         
         /*
         FitPopulation mypop = new FitPopulation(popSize);
@@ -28,8 +30,10 @@ public class fitting
         {
             evals = mypop.evaluate(evals, evaluations_limit_);
         }
-        
         */
+        
+        
+        
     }
     
     public static void main(String[] args)
