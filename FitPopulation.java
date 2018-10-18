@@ -10,7 +10,7 @@ import java.util.HashMap;
 
 public class FitPopulation extends Population
 {
-    private static final int nRuns = 10;
+    private static final int nRuns = 5;
     private static final String tmpFile = "fitparams/currentEvaluation.params";
     
     private String[] labels;
@@ -84,7 +84,14 @@ public class FitPopulation extends Population
                     maxR[i] = minR[i];
                 }
                 else if (labels[i] == Mutation.PARAM.MUTATIONRATE.toString()
-                        || labels[i] == Recombination.PARAM.ALPHA.toString())
+                        || labels[i] == Recombination.PARAM.ALPHA.toString()
+                        // XXX is it useful to keep these small?
+                        || labels[i] ==
+                        Mutation.PARAM.UNCORRELATED_THETA.toString()
+                        || labels[i] ==
+                        Mutation.PARAM.UNCORRELATED_THETA_.toString()
+                        || labels[i] ==
+                        Mutation.PARAM.UNCORRELATED_ETHA.toString())
                 {
                     minR[i] = 0.0;
                     maxR[i] = 1.0;
@@ -169,6 +176,12 @@ public class FitPopulation extends Population
                     fitness += value;
                 }
                 fitness /= nRuns;
+                double tmp = 0.0;
+                for (double value : runs)
+                {
+                    tmp += Math.pow((value - fitness), 2);
+                }
+                fitness /= (Math.sqrt(tmp / (nRuns - 1.0)) + 1);
             }
             catch (IOException e)
             {

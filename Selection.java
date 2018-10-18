@@ -27,7 +27,7 @@ public class Selection
     **************************************************************************/
 
     // Combines two lists of individuals.
-    public static Population.Individual[] individualsAND(
+    private static Population.Individual[] individualsAND(
             Population.Individual[] list1, Population.Individual[] list2)
     {
         Population.Individual[] individuals = new Population.Individual[
@@ -71,7 +71,6 @@ public class Selection
         return false;
     }
 
-    // TODO NEEDS TESTING
     // Sorts individuals on array of integers from highest to lowest.
     private static Population.Individual[] individualsBubbleSort(
             Population.Individual[] individuals, int[] values)
@@ -152,10 +151,15 @@ public class Selection
 
     // Selects k best individuals.
     public static Population.Individual[] greedy(
-            Population.Individual[] individuals, int k)
+            Population.Individual[] individuals_, int k)
     {
-        individuals = Population.sort(individuals);
-        return Arrays.copyOfRange(individuals, 0, k);
+        individuals_ = Population.sort(individuals_);
+        Population.Individual[] individuals = new Population.Individual[k];
+        for (int i = 0; i < k; i++)
+        {
+            individuals[i] = individuals_[i % individuals_.length];
+        }
+        return individuals;
     }
 
     // Calls roundRobin after unpacking parameters.
@@ -163,32 +167,44 @@ public class Selection
             Population.Individual[] individuals, Random rnd,
             HashMap<String, Double> params)
     {
-        String param = PARAM.ROUNDROBIN_Q.toString();
+        String param = PARAM.PARENT_K.toString();
+        int k = params.containsKey(param) ?
+                params.get(param).intValue() :
+                individuals.length;
+        param = PARAM.ROUNDROBIN_Q.toString();
         int q = params.containsKey(param) ?
                 params.get(param).intValue() :
                 individuals.length;
-        return roundRobin(individuals, rnd, q);
+        return roundRobin(individuals, rnd, k, q);
     }
 
-    // TODO NEEDS TESTING
     // Compare individual each individual to q other individuals,
     // return in order of best to worst scoring individuals.
     public static Population.Individual[] roundRobin(
-            Population.Individual[] individuals, Random rnd, int q)
+            Population.Individual[] individuals_, Random rnd, int k, int q)
     {
-        int[] wins = new int[individuals.length];
-        for (int i = 0; i < individuals.length; i++)
+        Population.Individual[] individuals = new Population.Individual[k];
+        for (int l = 0; l < k; l++)
         {
-            for (int j = 0; j < q; j++)
+            int[] wins = new int[individuals_.length];
+            for (int i = 0; i < individuals_.length; i++)
             {
-                if (individuals[i].compareTo(
-                        individuals[rnd.nextInt(individuals.length)]) == 1)
+                for (int j = 0; j < q; j++)
                 {
-                    wins[i]++;
+                    if (individuals_[i].compareTo(individuals_[
+                            rnd.nextInt(individuals_.length)]) == 1)
+                    {
+                        wins[i]++;
+                    }
                 }
             }
+            individuals_ = individualsBubbleSort(individuals_, wins);
+            for (int i = 0; i < individuals_.length && i + l < k; i++)
+            {
+                individuals[i + l] = individuals_[i];
+            }
         }
-        return individualsBubbleSort(individuals, wins);
+        return individuals;
     }
 
 
@@ -236,7 +252,7 @@ public class Selection
             Random rnd, int q)
     {
         Population.Individual[] individuals = individualsAND(parents, children);
-        individuals = roundRobin(individuals, rnd, q);
+        individuals = roundRobin(individuals, rnd, parents.length, q);
         return Arrays.copyOfRange(individuals, 0, parents.length);
     }
 
@@ -261,9 +277,12 @@ public class Selection
     {
         if (children.length < parents.length)
         {
+            return mu_plus_lambda(parents, children);
+            /*
             throw new ArrayIndexOutOfBoundsException("\n\t" +
                     Selection.class.getName() + "::mu_comma_lambda: " +
                     "children.length < parents.length\n");
+            */
         }
         children = Population.sort(children);
         return Arrays.copyOfRange(children, 0, parents.length);

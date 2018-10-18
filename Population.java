@@ -158,94 +158,53 @@ public class Population
         Individual[] parents = new Individual[n];
 
         // Numbers list for random sampling
-        List<Integer> numbers = ListOfRange(n);
+        List<Integer> numbers = new ArrayList<Integer>();
+        for(int i = 0; i < n; i++)
+        {
+            numbers.add(i);
+        }
 
-        // Compute mean and sd for prop fitness function
-        double mean = calculateAverageFitness();
-        double sd = calculateSDFitness(mean);
-        computePropFitness(mean, sd, c);
+
+        // Compute mean and sd for proportional fitness function
+        double mean = 0.0;
+        for (int i = 0; i < individuals.length; i++)
+        {
+            mean += individuals[i].fitness;
+        }
+        mean /= individuals.length;
+        double sd = 0.0;
+        for (int i = 0; i < individuals.length; i++)
+        {
+            sd += Math.pow(individuals[i].fitness - mean, 2);
+        }
+        sd = Math.sqrt(sd/individuals.length);
+        for (int i = 0; i < individuals.length; i++)
+        {
+            // Function found in book pg: 81.
+            double prop_fitness = individuals[i].fitness - (mean - c*sd);
+            // Assign prop fitness to individual
+            individuals[i].prop_fitness = Math.max(0, prop_fitness);
+        }
         
         // Repeat tournament selection for amount of parents needed.
         for (int i=0; i<n; i++)
         {
             // Create candidates for tournament by random sampling k candidates with replacement.
-            Individual[] candidates = pickNRandom(k, numbers);
+            Individual[] candidates = new Individual[k];
+            // Shuffle to get random numbers
+            Collections.shuffle(numbers);
+            for (int j = 0; j < k; j++)
+            {
+                // Get random individual
+                candidates[j] = individuals[numbers.get(j)];
+            }
             // Sort highest to lowest based on prop fitness.
-            candidates = sort_prop(candidates);
+            Arrays.sort(candidates, (u1, u2) -> Double.compare(
+                    u2.prop_fitness, u1.prop_fitness));
             //  Assign best candidate to parents
             parents[i] = candidates[0];
         }
         return parents;
-    }
-
-    // Calculates the Mean of the population fitnesses
-    public double calculateAverageFitness()
-    {
-        double fit_sum = 0.0;
-        for (int i = 0; i < individuals.length; i++)
-        {
-            fit_sum += individuals[i].fitness;
-        }
-        return fit_sum/individuals.length;
-    }
-
-    // Calculates the standard deviation of the population fitnesses
-    public double calculateSDFitness(double mean) 
-    {
-        double temp = 0.0;
-        for (int i = 0; i < individuals.length; i++)
-        {
-            double diff_to_mean = Math.pow(individuals[i].fitness - mean, 2);
-            temp += diff_to_mean;
-        }
-        return Math.sqrt(temp/individuals.length);
-
-    }
-
-    // Computes the proportional fitness for the population
-    public void computePropFitness(double mean, double sd, int c)
-    {
-        for (int i = 0; i < individuals.length; i++)
-        {
-            // Function found in book pg: 81.
-            double prop_fitness = individuals[i].fitness - (mean - c*sd);
-
-            // Assign prop fitness to individual
-            individuals[i].prop_fitness = Math.max(0, prop_fitness);
-        }
-    }
-
-    // Create list of numbers in range 0 to n
-    public List<Integer> ListOfRange(int n)
-    {
-        List<Integer> numbers = new ArrayList<Integer>();
-        for(int i = 0; i < n; i++)
-        {
-            numbers.add(i);        
-        }
-        return numbers;
-    }
-
-    // Randomly sample over the individuals with the use of a list in range 0 to k
-    public Individual[] pickNRandom(int n, List<Integer> numbers) 
-    {
-        Individual[] candidates = new Individual[n];
-
-        // Shuffle to get random numbers
-        Collections.shuffle(numbers);
-        for (int i = 0; i < n; i++)
-        {
-            // Get random individual
-            candidates[i] = individuals[numbers.get(i)];
-        }
-        return candidates;
-    }
-
-    // Sort the population based on the proportional fitness
-    public Individual[] sort_prop(Individual[] candidates)
-    {
-        Arrays.sort(candidates, (u1, u2) -> Double.compare(u2.prop_fitness, u1.prop_fitness));
-        return candidates;
     }
 
     /**************************************************************************
@@ -592,7 +551,6 @@ public class Population
 
 
 
-/*
         public String toString()
         {
             String s = Double.toString(
@@ -607,9 +565,8 @@ public class Population
             }
             return s.substring(0, s.length() - 2) + "]";
         }
-*/
 
-
+/*
         public String toString()
         {
             String s = Double.toString(
@@ -623,7 +580,7 @@ public class Population
             }
             return s.substring(0, s.length() - 2) + "]";
         }
-
+*/
 
 
 

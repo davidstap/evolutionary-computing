@@ -98,6 +98,8 @@ public class Recombination
         for (int i = 0; i < list1.length; i++)
         {
             // Set genomes and sigma-lists for current pair.
+            //FIXME Still crashes NULLPOINTEREXCEPTION, but only when fitting
+            //      Also, loopin through list1 or list2 is endless?
             double[] g1 = list1[i].getGenome();
             double[] s1 = list1[i].getSigmas();
             double[] g2 = list2[i].getGenome();

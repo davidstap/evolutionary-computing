@@ -27,16 +27,18 @@ public class fitting
         boolean print = true;
         
         int evals = 0;
-        int evaluations_limit_ = 500;
+        int evaluations_limit_ = 400;
         
-        int popSize = 16;
+        int popSize = 8;
         
         // Setting parent selection type and parameters.
-        Selection.TYPE parentSelectionType = Selection.TYPE.GREEDY;
+        Selection.TYPE parentSelectionType = Selection.TYPE.ROUNDROBIN;
         HashMap<String, Double> parentSelectionParams =
                 new HashMap<String, Double>();
         parentSelectionParams.put(Selection.PARAM.PARENT_K.toString(),
-                (double)popSize);
+                (double)popSize*2);
+        parentSelectionParams.put(Selection.PARAM.ROUNDROBIN_Q.toString(),
+                (double)popSize/2);
 
         // Setting recombination type and parameters.
         Recombination.TYPE recombinationType = Recombination.TYPE.UNIFORM;
@@ -47,10 +49,10 @@ public class fitting
         Mutation.TYPE mutationType = Mutation.TYPE.UNCORRELATED;
         HashMap<String, Double> mutationParams = new HashMap<String, Double>();
         mutationParams.put(Mutation.PARAM.MUTATIONRATE.toString(),
-                1.0 / Population.dim);
+                2.0 / Population.dim);
 
         // Setting survival selection type and parameters.
-        Selection.TYPE survivalSelectionType = Selection.TYPE.MUPLUSLAMBDA;
+        Selection.TYPE survivalSelectionType = Selection.TYPE.MUCOMMALAMBDA;
         HashMap<String, Double> survivalSelectionParams =
                 new HashMap<String, Double>();
 
