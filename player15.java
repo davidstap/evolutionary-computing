@@ -72,11 +72,10 @@ public class player15 implements ContestSubmission
 
     public void printException(Exception e)
     {
-        System.out.print("\u001B[31m");
-        System.out.print(e);
-        System.out.print("\u001B[0m");
+        System.err.print("\u001B[31m");
+        System.err.print(e);
+        System.err.print("\u001B[0m");
     }
-
 
     public void handleParams(HashMap<String, Double> params,
             HashMap<String, Double> parentSelectionParams,
@@ -137,10 +136,12 @@ public class player15 implements ContestSubmission
 
         String paramsData = System.getProperty("params");
 
+        /*
         System.out.println("--PARAMSFILE--");
         System.out.println(paramsData);
-        System.out.println(Population.PARAM.SIZE.toString());
         System.out.println("--------------");
+        */
+
 
         // EA Parameters
         int evals = 0;
@@ -173,10 +174,13 @@ public class player15 implements ContestSubmission
         // make testc ==> 9.999938929480702
 
         // Setting parent selection type and parameters.
-        Selection.TYPE parentSelectionType = Selection.TYPE.GREEDY;
+//        Selection.TYPE parentSelectionType = Selection.TYPE.ROUNDROBIN;
+        Selection.TYPE parentSelectionType = Selection.TYPE.ROUNDROBIN;
         HashMap<String, Double> parentSelectionParams =
                 new HashMap<String, Double>();
         parentSelectionParams.put(Selection.PARAM.PARENT_K.toString(),
+                (double)nChildren);
+        parentSelectionParams.put(Selection.PARAM.ROUNDROBIN_Q.toString(),
                 (double)nChildren);
 
         // Setting recombination type and parameters.
@@ -191,7 +195,7 @@ public class player15 implements ContestSubmission
                 1.0 / Population.dim);
 
         // Setting survival selection type and parameters.
-        Selection.TYPE survivalSelectionType = Selection.TYPE.MUPLUSLAMBDA;
+        Selection.TYPE survivalSelectionType = Selection.TYPE.MUCOMMALAMBDA;
         HashMap<String, Double> survivalSelectionParams =
                 new HashMap<String, Double>();
 
@@ -231,9 +235,12 @@ public class player15 implements ContestSubmission
         // (XXX Uses different random so values in myPop stay the same
         //      while Island.java develops.)
 
+
+        /* FIXME removed for testing since TOURNAMENT still crashes
+                 for certain parameters
         Island island = new Island(recomb_method, mutation_method, selection_method, survival_method, popSize, evaluation_::evaluate, islandRnd_);
         island.evolutionCycle(nChildren);
-
+        */
 
 
         // Initialize population
@@ -266,8 +273,8 @@ public class player15 implements ContestSubmission
 
                     // ---------- Recombination ----------
                     Population.Individual[] children;
-                        children = myPop.recombination(parents, rnd_,
-                                recombinationType, recombinationParams);
+                    children = myPop.recombination(parents, rnd_,
+                            recombinationType, recombinationParams);
 
 
                     Population childPop = new Population(

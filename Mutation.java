@@ -15,6 +15,8 @@ public class Mutation {
         UNCORRELATED_THETA, UNCORRELATED_THETA_, UNCORRELATED_ETHA
     }
 
+/*
+
 // TODO replace normal wit a gaussian (params: MU, SIGMA instead of FACTOR)
 
     // Applies mutation to a single gene using given random number generator.
@@ -80,21 +82,7 @@ public class Mutation {
         return genome;
     }
 
-    // Returns random value from gaussian distribution with given mean
-    // and standard deviation, generated using given random number generator.
-    // Generated value is kept between given lower and upper bound.
-    private static double Nr(
-        Random rnd, double mean, double std,
-        double lowerBound, double upperBound)
-    {
-        double n;
-        do
-        {
-            n = N(rnd, mean, std);
-        }
-        while (n < lowerBound || n > upperBound);
-        return n;
-    }
+*/
 
 /*****************************************************************************/
 /*****************************************************************************/
@@ -119,7 +107,8 @@ public class Mutation {
 
     // Calls main gaussian method after first unpacking parameter hashmap.
     public static double[] gaussian(
-            double[] genome, Random rnd, double lowerBound, double upperBound,
+            double[] genome, Random rnd,
+            double[] lowerBound, double[] upperBound,
             HashMap<String, Double> params)
     {
         String param = PARAM.MUTATIONRATE.toString();
@@ -144,7 +133,8 @@ public class Mutation {
     // Randomly generated values are created using the given random generator.
     // Genome values are kept between given lower and upper bound.
     public static double[] gaussian(
-            double[] genome, Random rnd, double lowerBound, double upperBound,
+            double[] genome, Random rnd,
+            double[] lowerBound, double[] upperBound,
             double mutationRate, double mu, double sigma)
     {
         for (int i = 0; i < genome.length; i++)
@@ -152,8 +142,8 @@ public class Mutation {
             // Decide to apply mutation to current gene.
             if (mutationRate > rnd.nextDouble())
             {
-                genome[i] = gaussian_(genome[i], rnd, lowerBound, upperBound,
-                        mu, sigma);
+                genome[i] = gaussian_(genome[i], rnd,
+                        lowerBound[i], upperBound[i], mu, sigma);
             }
         }
         return genome;
@@ -165,14 +155,23 @@ public class Mutation {
             double mu, double sigma)
     {
         double tmp;
+        // Keep genome within given range if proper range is given.
         if (lowerBound < upperBound)
         {
             do
             {
                 tmp = gene + N(rnd, mu, sigma);
             }
-            // Keep genome within given range.
             while (tmp < lowerBound || tmp > upperBound);
+        }
+        // Ignore upper bound if lower = upper.
+        else if (lowerBound == upperBound)
+        {
+            do
+            {
+                tmp = gene + N(rnd, mu, sigma);
+            }
+            while (tmp < lowerBound);
         }
         // Ignore lower and upper bound if lower > upper.
         else
@@ -189,7 +188,7 @@ public class Mutation {
     // Calls main uncorrelated method after first unpacking parameter hashmap.
     public static double[][] uncorrelated(
             double[] genome, double[] sigmas, Random rnd,
-            double lowerBound, double upperBound,
+            double[] lowerBound, double[] upperBound,
             HashMap<String, Double> params)
     {
         String param = PARAM.MUTATIONRATE.toString();
@@ -219,7 +218,7 @@ public class Mutation {
     // Genome values are kept between given lower and upper bound.
     public static double[][] uncorrelated(
             double[] genome, double[] sigmas, Random rnd,
-            double lowerBound, double upperBound,
+            double[] lowerBound, double[] upperBound,
             double mutationRate,
             double theta, double theta_, double etha)
     {
@@ -230,7 +229,7 @@ public class Mutation {
             if (mutationRate > rnd.nextDouble())
             {
                 tmp = uncorrelated_(genome[i], sigmas[i], rnd,
-                        lowerBound, upperBound,
+                        lowerBound[i], upperBound[i],
                         theta, theta_, etha);
                 sigmas[i] = tmp[1];
                 genome[i] = tmp[0];
@@ -246,6 +245,7 @@ public class Mutation {
             double theta, double theta_, double etha)
     {
         double[] tmp;
+        // Keep genome within given range if proper range is given.
         if (lowerBound < upperBound)
         {
             do
@@ -253,8 +253,17 @@ public class Mutation {
                 tmp = uncorrelated__(gene, sigma, rnd,
                         theta, theta_, etha);
             }
-            // Keep genome within given range.
             while (tmp[0] < lowerBound || tmp[0] > upperBound);
+        }
+        // Ignore upper bound if lower = upper.
+        else if (lowerBound == upperBound)
+        {
+            do
+            {
+                tmp = uncorrelated__(gene, sigma, rnd,
+                        theta, theta_, etha);
+            }
+            while (tmp[0] < lowerBound);
         }
         // Ignore lower and upper bound if lower > upper.
         else

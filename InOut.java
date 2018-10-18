@@ -15,6 +15,17 @@ import java.util.HashMap;
 
 class InOut
 {
+    public static void save(String[] keys, double[] values, String fpath)
+            throws IOException
+    {
+        HashMap<String, Double> map = new HashMap<String, Double>();
+        for (int i = 0; i < keys.length; i++)
+        {
+            map.put(keys[i], values[i]);
+        }
+        save(map, fpath);
+    }
+
     public static void save(HashMap<String, Double> map, String fpath)
             throws IOException
     {
@@ -39,7 +50,7 @@ class InOut
     {
         HashMap<String, Double> map = new HashMap<String, Double>();
         BufferedReader reader = new BufferedReader(new StringReader(data));
-
+        
         String line, key;
         double value;
         int splitAt;

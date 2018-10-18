@@ -2,35 +2,46 @@ import java.io.IOException;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.StringReader;
 
 import java.util.Arrays;
-import java.util.Map;
+import java.util.Random;
+import java.util.HashMap;
 
-public class FitPopulation
+public class FitPopulation extends Population
 {
-    public enum SETTABLE {
-        PARENTSELECTION, RECOMBINATION, MUTATION, SURVIVALSELECTION
+    private static final int nRuns = 10;
+    private static final String tmpFile = "fitparams/currentEvaluation.params";
+    
+    private String[] labels;
+    
+    public FitPopulation(int size, Random rnd, String[] labels_)
+    {
+        dim = labels_.length;
+        labels = labels_;
+        individuals = new FitIndividual[size];
+        for (int i = 0; i < individuals.length; i++)
+        {
+            individuals[i] = new FitIndividual(rnd, labels_);
+        }
     }
     
-    private Individual[] individuals;
-    
-    public FitPopulation(
-        int size,
-        Map<String, String> types,
-        Map<String, Map<String, Double>> args
-    )
+    public FitPopulation(Individual[] individuals_, String[] labels_)
     {
-        individuals = new Individual[size];
-        for (int i = 0; i < size; i++)
+        dim = labels_.length;
+        labels = labels_;
+        individuals = new FitIndividual[individuals_.length];
+        for (int i = 0; i < individuals.length; i++)
         {
-            individuals[i] = new Individual();
+            individuals[i] = new FitIndividual(individuals_[i], labels_);
         }
     }
     
     // Evaluates members of population keeping track of number of total
     // evaluations, returns new total number of evaluations. If evaluations
     // limit is exceeded, deletes not-evaluated individuals from population.
-    public int evaluate(int evals, int evaluations_limit)
+    public int evaluate(int evals, int evaluations_limit, Random rnd)
+            throws IOException
     {
         for (int i = 0; i < individuals.length; i++)
         {
@@ -40,7 +51,7 @@ public class FitPopulation
                 // Discard not-evaluated part of population.
                 if (i == 0)
                 {
-                    individuals = new Individual[0];
+                    individuals = new FitIndividual[0];
                 }
                 else
                 {
@@ -49,30 +60,115 @@ public class FitPopulation
                 break;
             }
             // Evaluate individual.
-            individuals[i].evaluate();
+            ((FitIndividual)individuals[i]).evaluate(rnd);
             evals++;
         }
         return evals;
     }
     
-    public class Individual implements Comparable<Individual>
+    public class FitIndividual extends Population.Individual
     {
-        
-        public double fitness;
-        
-        public Individual()
+        // Set minR and maxR based on parameter label.
+        public void setLimits(String[] labels)
         {
-            fitness = 0;
+            for (int i = 0; i < genome.length; i++)
+            {
+                if (labels[i] == Population.PARAM.SIZE.toString()
+                        || labels[i] == Population.PARAM.NCHILDREN.toString()
+                        || labels[i] == Selection.PARAM.PARENT_K.toString()
+                        || labels[i] == Selection.PARAM.ROUNDROBIN_Q.toString()
+                        || labels[i] ==
+                        Selection.PARAM.SURVIVALROUNDROBIN_Q.toString())
+                {
+                    minR[i] = 1.0;
+                    maxR[i] = minR[i];
+                }
+                else if (labels[i] == Mutation.PARAM.MUTATIONRATE.toString()
+                        || labels[i] == Recombination.PARAM.ALPHA.toString())
+                {
+                    minR[i] = 0.0;
+                    maxR[i] = 1.0;
+                }
+                else
+                {
+                    minR[i] = 0;
+                    maxR[i] = -1;
+                }
+            }
         }
         
-        public void evaluate()
+        public FitIndividual(Random rnd, String[] labels)
         {
-            fitness++;
-            
+            for (int i = 0; i < genome.length; i++)
+            {
+                setLimits(labels);
+                // Set random starting genome based on given range.
+                if (minR[i] > maxR[i])
+                {
+                    genome[i] = rnd.nextDouble();
+                }
+                else if (minR[i] == maxR[i])
+                {
+                    genome[i] = minR[i] + rnd.nextDouble() * 10;
+                }
+                else
+                {
+                    genome[i] = (minR[i] + maxR[i]) / 2.0 +
+                            (rnd.nextDouble() - 0.5) * (maxR[i] - minR[i]);
+                }
+            }
+        }
+        
+        public FitIndividual(Individual individual, String[] labels)
+        {
+            setLimits(labels);
+            genome = individual.genome.clone();
+            sigmas = individual.sigmas.clone();
+            fitness = individual.fitness;
+            prop_fitness = individual.prop_fitness;
+            selectionRanking = individual.selectionRanking;
+            rank = individual.rank;
+        }
+        
+        public void saveGenome(String fpath)
+                throws IOException
+        {
+            InOut.save(labels, genome, fpath);
+        }
+        
+        public void evaluate(Random rnd)
+                throws IOException
+        {
             try
             {
-                System.out.print(
-                        InOut.command("echo " + Double.toString(fitness)));
+                double[] runs = new double[nRuns];
+                saveGenome(tmpFile);
+                for (int i = 0; i < nRuns; i++)
+                {
+                    String cmdOut = InOut.command("make tests SEED=" +
+                            Integer.toString(rnd.nextInt(Integer.MAX_VALUE)) +
+                            " PARAMSFILE=" + tmpFile);
+                    BufferedReader reader = new BufferedReader(
+                            new StringReader(cmdOut));
+                    String line;
+                    boolean found = false;
+                    while ((line = reader.readLine()) != null)
+                    {
+                        if (line.startsWith("Score: "))
+                        {
+                            runs[i] = Double.parseDouble(
+                                    line.substring(line.lastIndexOf(" ") + 1,
+                                    line.length()));
+                            found = true;
+                        }
+                    }
+                }
+                fitness = 0;
+                for (double value : runs)
+                {
+                    fitness += value;
+                }
+                fitness /= nRuns;
             }
             catch (IOException e)
             {
@@ -86,12 +182,11 @@ public class FitPopulation
             }
         }
         
-        @Override
-        public int compareTo(Individual individual)
+        // Returns clone of individuals genome.
+        public double[] getGenome()
         {
-            return Double.compare(fitness, individual.fitness);
+            return genome.clone();
         }
-        
     }
     
 }

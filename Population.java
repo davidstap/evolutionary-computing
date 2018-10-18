@@ -15,16 +15,15 @@ public class Population
     }
 
     // Genome length.
-    public static final int dim = 10;
+    public static int dim = 10;
 
-    private Population.Individual[] individuals;
+    protected Population.Individual[] individuals;
     private Function<double[], Object> evaluationFunction;
 
     /**************************************************************************
         Constructors
     **************************************************************************/
 
-    // XXX should probably be temporary?
     public Population()
     {
     }
@@ -324,8 +323,20 @@ public class Population
             default:
                 throw new IllegalArgumentException("\n\t" +
                         Population.class.getName() +
-                        ": survival selection type not recognized\n");
+                        ": parent selection type not recognized\n");
         }
+        /* TODO create better selection for nParents < nChildren
+        String str = Selection.PARAM.PARENT_K.toString();
+        int nChildren = selectionParams.containsKey(str) ?
+                        selectionParams.get(str).intValue() :
+                        individuals.length;
+        if (selection.length <= nChildren)
+        {
+            selection = Selection.individualsAND(
+                    selection, Selection.uniform(
+                    selection, rnd, selectionParams));
+        }
+        */
         return selection;
     }
 
@@ -360,6 +371,7 @@ public class Population
             HashMap<String, Double> selectionParams)
             throws ArrayIndexOutOfBoundsException, IllegalArgumentException
     {
+        Individual elite = Selection.getElitism(this.getIndividuals());
         Individual[] selection;
         switch(selectionType) {
             case GENITOR:
@@ -386,7 +398,7 @@ public class Population
                         Population.class.getName() +
                         ": survival selection type not recognized\n");
         }
-        individuals = selection;
+        individuals = Selection.applyElitism(elite, selection);
     }
 
     /**************************************************************************
@@ -461,12 +473,11 @@ public class Population
     {
 
         // Ranges in which genome values fall.
-        public static final double minR = -5.0;
-        public static final double maxR = 5.0;
-        public static final double R = maxR - minR;
+        public double[] minR;
+        public double[] maxR;
 
-        private double[] genome;
-        private double[] sigmas;
+        protected double[] genome;
+        protected double[] sigmas;
         public double fitness;
         public double prop_fitness;
         
@@ -480,37 +491,43 @@ public class Population
         **********************************************************************/
 
         // Basic setting of default variables.
-        private void init()
+        public Individual()
         {
+            minR = new double[dim];
+            maxR = new double[dim];
+            Arrays.fill(minR, -5.0);
+            Arrays.fill(maxR, 5.0);
+            
+            genome = new double[dim];
+            sigmas = new double[dim];
+            Arrays.fill(sigmas, 1.0);
+            
             fitness = 0.0;
             selectionRanking = 0.0;
             prop_fitness =0.0;
             rank = 0;
         }
-
         // Creates individual with random genome and default sigma values
         // (filled with 1's).
         public Individual(Random rnd)
         {
-            init();
-            genome = Mutation.normal(new double[dim], rnd, R, minR, maxR, 1);
-            sigmas = new double[dim];
-            Arrays.fill(sigmas, 1.0);
-        }
-
-        // FIXME ONLY TEMPORARY TO GET RID OF ERRORS
-        public Individual(double[] genome_)
-        {
-            init();
-            genome = genome_;
-            sigmas = new double[dim];
-            Arrays.fill(sigmas, 1.0);
+            this();
+            for (int i = 0; i < genome.length; i++)
+            {
+                genome[i] = (minR[i] + maxR[i]) / 2.0 +
+                        (rnd.nextDouble() - 0.5) * (maxR[i] - minR[i]);
+            }
+            /* XXX not using normal any more
+            genome = Mutation.normal(
+                    new double[dim], rnd, maxR[0] - minR[0],
+                    minR[0], maxR[0], 1);
+            */
         }
 
         // Creates individual with given genome and sigma values.
         public Individual(double[] genome_, double[] sigmas_)
         {
-            init();
+            this();
             genome = genome_;
             sigmas = sigmas_;
         }
@@ -530,16 +547,6 @@ public class Population
                     genome = Mutation.gaussian(
                             getGenome(), rnd, minR, maxR, params);
                     break;
-                /*
-                case NORMAL:
-                    String param = Mutation.PARAM.NORMAL_FACTOR.toString();
-                    double factor = params.containsKey(param) ?
-                            params.get(param) : 1.0;
-                    genome = Mutation.normal(
-                            getGenome(), rnd, factor, minR, maxR);
-                    break;
-                    */
-                    
                 case UNCORRELATED:
                     double[][] res = Mutation.uncorrelated(
                             getGenome(), getSigmas(), rnd, minR, maxR, params);
@@ -550,31 +557,6 @@ public class Population
                     throw new IllegalArgumentException("\n\t" +
                             Population.class.getName() +
                             ": mutation type not recognized\n");
-            }
-        }
-
-        // Applies mutation on individual.
-        public void mutate(Random rnd)
-        {
-            double[][] res = Mutation.uncorrelated(
-                    getGenome(), getSigmas(), rnd, minR, maxR, 1.0/dim,
-                    1.0 / Math.sqrt(2 * Math.sqrt(dim)),
-                    1.0 / Math.sqrt(2 * dim), 0.01);
-            genome = res[0];
-            sigmas = res[1];
-        }
-
-        //TODO Don't hardcode pMutate
-        public void mutate_normal(Random rnd)
-        {
-            double factor = 1;
-            double pMutate = 0.1;
-            for (int i = 0; i < genome.length; i++)
-            {
-                if (pMutate > rnd.nextDouble())
-                {
-                    genome[i] = Mutation.normal_(genome[i], rnd, factor, minR, maxR);
-                }
             }
         }
 
@@ -611,7 +593,6 @@ public class Population
 
 
 /*
-
         public String toString()
         {
             String s = Double.toString(
@@ -642,6 +623,9 @@ public class Population
             }
             return s.substring(0, s.length() - 2) + "]";
         }
+
+
+
 
 
     }

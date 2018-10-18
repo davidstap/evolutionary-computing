@@ -27,7 +27,7 @@ public class Selection
     **************************************************************************/
 
     // Combines two lists of individuals.
-    private static Population.Individual[] individualsAND(
+    public static Population.Individual[] individualsAND(
             Population.Individual[] list1, Population.Individual[] list2)
     {
         Population.Individual[] individuals = new Population.Individual[
@@ -181,7 +181,8 @@ public class Selection
         {
             for (int j = 0; j < q; j++)
             {
-                if (individuals[i].compareTo(individuals[rnd.nextInt()]) == 1)
+                if (individuals[i].compareTo(
+                        individuals[rnd.nextInt(individuals.length)]) == 1)
                 {
                     wins[i]++;
                 }
@@ -272,13 +273,25 @@ public class Selection
        Other selection
     **************************************************************************/
 
-    // TODO NEEDS TESTING
     // Returns best individual from given list of individuals.
     public static Population.Individual getElitism(
             Population.Individual[] individuals)
     {
         individuals = Population.sort(individuals);
         return individuals[0];
+    }
+
+    // TODO NEEDS TESTING
+    // Inserts given elite into list of individuals, replacing worst indiviudal.
+    public static Population.Individual[] applyElitism(
+            Population.Individual elite, Population.Individual[] individuals)
+    {
+        if (!isDuplicate(elite, individuals))
+        {
+            individuals = Population.reverseSort(individuals);
+            individuals[0] = elite;
+        }
+        return individuals;
     }
 
     // TODO NEEDS TESTING

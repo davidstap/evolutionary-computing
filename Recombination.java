@@ -24,6 +24,11 @@ public class Recombination
     private static Population.Individual[][] splitIndividuals(
             Population.Individual[] individuals_)
     {
+        if (individuals_.length == 1)
+        {
+            return new Population.Individual[][]{
+                    individuals_, individuals_};
+        }
         int nPairs = (int)(individuals_.length / 2);
         Population.Individual[][] individuals =
                 new Population.Individual[2][nPairs];

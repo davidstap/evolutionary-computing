@@ -1,3 +1,4 @@
+SEED ?= 1
 PARAMSFILE ?= 
 ifeq ($(PARAMSFILE),)
 	PARAMS := 
@@ -42,19 +43,19 @@ test:
 	make -s tests
 
 testo:
-	java $(PARAMS) -jar testrun.jar -submission=$(FILE) -evaluation=SphereEvaluation -seed=1
+	java $(PARAMS) -jar testrun.jar -submission=$(FILE) -evaluation=SphereEvaluation -seed=$(SEED)
 
 testc:
 	export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$PWD; \
-	java $(PARAMS) -jar testrun.jar -submission=$(FILE) -evaluation=BentCigarFunction -seed=1
+	java $(PARAMS) -jar testrun.jar -submission=$(FILE) -evaluation=BentCigarFunction -seed=$(SEED)
 
 testk:
 	export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$PWD; \
-	java $(PARAMS) -jar testrun.jar -submission=$(FILE) -evaluation=KatsuuraEvaluation -seed=1
+	java $(PARAMS) -jar testrun.jar -submission=$(FILE) -evaluation=KatsuuraEvaluation -seed=$(SEED)
 
 tests:
 	export LD_LIBRARY_PATH=$$LD_LIBRARY_PATH:$$PWD; \
-	java $(PARAMS) -jar testrun.jar -submission=$(FILE) -evaluation=SchaffersEvaluation -seed=1
+	java $(PARAMS) -jar testrun.jar -submission=$(FILE) -evaluation=SchaffersEvaluation -seed=$(SEED)
 
 clean:
 	rm -rf *~ submission.jar tmp $(CFILES) $(CFFILES)
