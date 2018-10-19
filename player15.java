@@ -174,8 +174,8 @@ public class player15 implements ContestSubmission
         // make testc ==> 9.999938929480702
 
         // Setting parent selection type and parameters.
-//        Selection.TYPE parentSelectionType = Selection.TYPE.ROUNDROBIN;
-        Selection.TYPE parentSelectionType = Selection.TYPE.TOURNAMENT;
+       Selection.TYPE parentSelectionType = Selection.TYPE.ROUNDROBIN;
+        // Selection.TYPE parentSelectionType = Selection.TYPE.TOURNAMENT;
         HashMap<String, Double> parentSelectionParams =
                 new HashMap<String, Double>();
         parentSelectionParams.put(Selection.PARAM.PARENT_K.toString(),
