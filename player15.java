@@ -147,7 +147,8 @@ public class player15 implements ContestSubmission
         int evals = 0;
 
         int popSize = 12;
-        int nChildren = popSize * 2;
+        // Cant be higher than pop size
+        int nChildren = 8;
 
         // TODO Put into the Hashmaps when functions are moved to Selection.java
         // Tournament selection candidates
@@ -174,8 +175,7 @@ public class player15 implements ContestSubmission
         // make testc ==> 9.999938929480702
 
         // Setting parent selection type and parameters.
-       Selection.TYPE parentSelectionType = Selection.TYPE.ROUNDROBIN;
-        // Selection.TYPE parentSelectionType = Selection.TYPE.TOURNAMENT;
+        Selection.SELECTION_TYPE parentSelectionType = Selection.SELECTION_TYPE.ROUNDROBIN;
         HashMap<String, Double> parentSelectionParams =
                 new HashMap<String, Double>();
         parentSelectionParams.put(Selection.PARAM.PARENT_K.toString(),
@@ -197,7 +197,7 @@ public class player15 implements ContestSubmission
                 1.0 / Population.dim);
 
         // Setting survival selection type and parameters.
-        Selection.TYPE survivalSelectionType = Selection.TYPE.MUCOMMALAMBDA;
+        Selection.SURVIVAL_TYPE survivalSelectionType = Selection.SURVIVAL_TYPE.MUCOMMALAMBDA;
         HashMap<String, Double> survivalSelectionParams =
                 new HashMap<String, Double>();
 
@@ -230,19 +230,30 @@ public class player15 implements ContestSubmission
         // XXX Parameters used in Island model (for now split from rest).
         Recombination.TYPE recomb_method = Recombination.TYPE.SIMPLEARITHMETIC;
         Mutation.TYPE mutation_method = Mutation.TYPE.UNCORRELATED;
-        Selection.TYPE selection_method = Selection.TYPE.TOURNAMENT;
-        Selection.TYPE survival_method = Selection.TYPE.MUPLUSLAMBDA;
+        Selection.SELECTION_TYPE selection_method = Selection.SELECTION_TYPE.GREEDY;
+        Selection.SURVIVAL_TYPE survival_method = Selection.SURVIVAL_TYPE.MUPLUSLAMBDA;
 
         // Test island
         // (XXX Uses different random so values in myPop stay the same
         //      while Island.java develops.)
 
 
-        /* FIXME removed for testing since TOURNAMENT still crashes
-                 for certain parameters
-        Island island = new Island(recomb_method, mutation_method, selection_method, survival_method, popSize, evaluation_::evaluate, islandRnd_);
-        island.evolutionCycle(nChildren);
-        */
+        Recombination.TYPE[] recomb_types = Recombination.TYPE.values();
+        Mutation.TYPE[] mutation_types = Mutation.TYPE.values();
+        Selection.SELECTION_TYPE[] selection_types = Selection.SELECTION_TYPE.values();
+        Selection.SURVIVAL_TYPE[] survival_types = Selection.SURVIVAL_TYPE.values();
+
+        int nIslands = 4;
+        IslandList island_list = new IslandList(nChildren);
+        for(int i = 0; i < nIslands; i++)
+        {
+            island_list.addIsland(new Island(recomb_types[rnd_.nextInt(recomb_types.length)], mutation_types[rnd_.nextInt(mutation_types.length)],
+                selection_types[rnd_.nextInt(selection_types.length)], survival_types[rnd_.nextInt(survival_types.length)], popSize, evaluation_::evaluate, islandRnd_));
+        }
+
+        int evolveAmount = 25;
+        island_list.evolveIslands(evolveAmount);
+        island_list.migration();
 
 
         // Initialize population
@@ -308,7 +319,7 @@ public class player15 implements ContestSubmission
 //                        new Population.Individual[]{myPop.getIndividuals()[0]}, new int[]{nChildren}, evaluation_::evaluate);
 
 
-                // ---------- Mutation ----------  
+                // ---------- Mutation ----------
                 childPop.mutate(rnd_, mutationType, mutationParams);
                 evals = childPop.evaluate(evals, evaluations_limit_);
 

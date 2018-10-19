@@ -1,7 +1,7 @@
 SEED ?= 1
-PARAMSFILE ?= 
+PARAMSFILE ?=
 ifeq ($(PARAMSFILE),)
-	PARAMS := 
+	PARAMS :=
 else
 	PARAMS := -Dparams="`cat $(PARAMSFILE)`"
 endif
@@ -15,7 +15,7 @@ JFFILES := $(patsubst %,%.java,$(FFILES))
 NESTCFS := $(foreach file,$(FFILES),$(wildcard $(file)$$*.class))
 CFFILES := $(subst $$,\$$,$(patsubst %,%.class,$(FFILES)) $(NESTCFS))
 
-FILES := $(FILE) Mutation Population Recombination Selection Island $(FFILES)
+FILES := $(FILE) Mutation Population Recombination Selection Island IslandList $(FFILES)
 JFILES := $(patsubst %,%.java,$(FILES))
 NESTCS := $(foreach file,$(FILES),$(wildcard $(file)$$*.class))
 CFILES := $(subst $$,\$$,$(patsubst %,%.class,$(FILES)) $(NESTCS))

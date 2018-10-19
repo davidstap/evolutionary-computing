@@ -15,6 +15,16 @@ public class Selection
         GENITOR, MUPLUSLAMBDA, MUCOMMALAMBDA
     }
 
+    // TODO SPLIT SURVIVAL AND SELECTION EVERYWHERE
+    public enum SELECTION_TYPE {
+        UNIFORM, GREEDY, ROULETTE, TOURNAMENT, ROUNDROBIN
+        }
+
+    // TODO SPLIT SURVIVAL AND SELECTION EVERYWHERE
+    public enum SURVIVAL_TYPE {
+        ROUNDROBIN, GENITOR, MUPLUSLAMBDA, MUCOMMALAMBDA
+        }
+
     // Potential selection parameters.
     public enum PARAM {
         PARENT_K,
@@ -222,7 +232,7 @@ public class Selection
         if (children.length > parents.length)
         {
             throw new ArrayIndexOutOfBoundsException("\n\t" +
-                    Selection.class.getName() + "::genitor: " +
+                      "::genitor: " +
                     "children.length > parents.length\n");
         }
         parents = Population.sort(parents);
@@ -234,7 +244,7 @@ public class Selection
 
     // Calls survivalRoundRobin after unpacking parameters.
     public static Population.Individual[] survivalRoundRobin(
-            Population.Individual[] parents, Population.Individual[] children, 
+            Population.Individual[] parents, Population.Individual[] children,
             Random rnd, HashMap<String, Double> params)
     {
         String param = PARAM.SURVIVALROUNDROBIN_Q.toString();

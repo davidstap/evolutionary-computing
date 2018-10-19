@@ -65,7 +65,7 @@ public class Population
             i += n;
         }
         individuals = new Individual[i];
-        
+
         // Create copies of parents.
         i = 0;
         for (int j = 0; j < N.length; j++)
@@ -77,7 +77,7 @@ public class Population
                 i++;
             }
         }
-        
+
         evaluationFunction = evaluationFunction_;
     }
 
@@ -91,19 +91,19 @@ public class Population
     {
       sort();
       setRanks();
-      setSelectionRank(s); 
-      
+      setSelectionRank(s);
+
       Individual[] parents = new Individual[n];
-      
+
       Random rnd = new Random();
       int currentMember = 0;
-      
+
       for (int j = 0; j < n; j++)
       {
         double r = rnd.nextDouble();
         int i = 0;
         double a_i = individuals[0].selectionRanking;
-        
+
         // stop when cumulative probability exceeds r,
         // then use i for individual.
         while (a_i < r)
@@ -127,14 +127,14 @@ public class Population
     {
       // start at highest rank
       int currentRank = individuals.length - 1;
-      
+
       for (int i=0; i<individuals.length; i++)
       {
         individuals[i].rank = currentRank;
         currentRank -= 1;
       }
     }
-    
+
     // TODO move to Selection.java.
     // Adds correct value for selectionRank to every individual in population.
     private void setSelectionRank(double s)
@@ -185,7 +185,7 @@ public class Population
             // Assign prop fitness to individual
             individuals[i].prop_fitness = Math.max(0, prop_fitness);
         }
-        
+
         // Repeat tournament selection for amount of parents needed.
         for (int i=0; i<n; i++)
         {
@@ -241,7 +241,7 @@ public class Population
     }
 
     public Individual[] parentSelection(Random rnd,
-            Selection.TYPE selectionType,
+            Selection.SELECTION_TYPE selectionType,
             HashMap<String, Double> selectionParams)
     {
 //        TODO tournament exceeds population size / parameters not hardcoded!!!
@@ -326,7 +326,7 @@ public class Population
 
     // Applies survival selection onto population.
     public void survival(Population childPopulation, Random rnd,
-            Selection.TYPE selectionType,
+            Selection.SURVIVAL_TYPE selectionType,
             HashMap<String, Double> selectionParams)
             throws ArrayIndexOutOfBoundsException, IllegalArgumentException
     {
@@ -350,8 +350,6 @@ public class Population
                 selection = Selection.mu_comma_lambda(
                     this.getIndividuals(), childPopulation.getIndividuals());
                 break;
-            // TODO implement
-            case TOURNAMENT:
             default:
                 throw new IllegalArgumentException("\n\t" +
                         Population.class.getName() +
@@ -402,6 +400,11 @@ public class Population
         return individuals.clone();
     }
 
+    void changeIndividual(int i, Individual ind)
+    {
+        individuals[i] = ind;
+    }
+
     // Returns maximal fitness value found in the population.
     public double getMaxFitness()
     {
@@ -439,7 +442,7 @@ public class Population
         protected double[] sigmas;
         public double fitness;
         public double prop_fitness;
-        
+
         // Used for ranking selection (see p81 book)
         public double selectionRanking;
         // ranking of individual. Note: worst rank = 0, best rank = mu-1
@@ -456,11 +459,11 @@ public class Population
             maxR = new double[dim];
             Arrays.fill(minR, -5.0);
             Arrays.fill(maxR, 5.0);
-            
+
             genome = new double[dim];
             sigmas = new double[dim];
             Arrays.fill(sigmas, 1.0);
-            
+
             fitness = 0.0;
             selectionRanking = 0.0;
             prop_fitness =0.0;
@@ -501,7 +504,7 @@ public class Population
         {
             switch(mutationType)
             {
-            
+
                 case GAUSSIAN:
                     genome = Mutation.gaussian(
                             getGenome(), rnd, minR, maxR, params);
