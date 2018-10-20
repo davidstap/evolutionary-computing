@@ -9,8 +9,8 @@ public class Island {
     private Population subpop;
     private Recombination.TYPE  recomb_method;
     private Mutation.TYPE mutation_method;
-    private Selection.TYPE selection_method;
-    private Selection.TYPE survival_method;
+    private Selection.SELECTION_TYPE selection_method;
+    private Selection.SURVIVAL_TYPE survival_method;
     private Random rnd;
     private Function<double[], Object> evaluationFunction_;
 
@@ -24,7 +24,7 @@ public class Island {
 
 
     public Island (
-            Recombination.TYPE recomb_method, Mutation.TYPE mutation_method, Selection.TYPE selection_method, Selection.TYPE survival_method, int n,
+            Recombination.TYPE recomb_method, Mutation.TYPE mutation_method, Selection.SELECTION_TYPE selection_method, Selection.SURVIVAL_TYPE survival_method, int n,
             Function<double[], Object> evaluationFunction_, Random rnd)
     {
         this.subpop = new Population(n, evaluationFunction_, rnd);
@@ -48,6 +48,11 @@ public class Island {
         survival_selection(childPop);
     }
 
+    public int evaluation(int evals, int evaluation_limit)
+    {
+    	evals = this.subpop.evaluate(evals, evaluation_limit);
+    	return evals;
+    }
 
     // Mutate population of island
     private Population mutate(Population pop)
@@ -67,12 +72,12 @@ public class Island {
         // FIXME changed with addition of Selection.TYPE and Selection.PARAM
         selection_params.put(Selection.PARAM.PARENT_K.toString(),
                 (double)nChildren);
-        
-        
+
+
         return this.subpop.parentSelection(this.rnd, this.selection_method, this.selection_params);
     }
 
-//    TODO ADD DIFFERENT SURVIVAL SELECTION METHODS
+//    TODO ADD DIFFERENT SURVIVAL SELECTION_TYPE METHODS
     private void survival_selection(Population childPop)
     {
         // FIXME changed with addition of Selection.TYPE and Selection.PARAM
@@ -88,4 +93,31 @@ public class Island {
         }
         */
     }
+
+    Recombination.TYPE getRecombinationType()
+    {
+    	return this.recomb_method;
+    }
+
+    Mutation.TYPE getMutationType()
+    {
+    	return this.mutation_method;
+    }
+
+    Selection.SELECTION_TYPE getSelectionType()
+    {
+    	return this.selection_method;
+    }
+
+   	Selection.SURVIVAL_TYPE getSurvivalType() 
+   	{
+   		return this.survival_method;
+   	}
+
+
+    Population getPop()
+    {
+        return this.subpop;
+    }
+
 }

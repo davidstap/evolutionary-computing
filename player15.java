@@ -47,6 +47,7 @@ public class player15 implements ContestSubmission
         // Get evaluation properties
         Properties props = evaluation.getProperties();
 
+        /*
         Set keys = props.keySet();
         Iterator itr = keys.iterator();
         String propStr;
@@ -56,6 +57,7 @@ public class player15 implements ContestSubmission
             System.out.println(" -- | " + propStr +
                     " = " + props.getProperty(propStr));
         }
+        */
 
         // Get evaluation limit
         evaluations_limit_ = Integer.parseInt(props.getProperty("Evaluations"));
@@ -179,8 +181,7 @@ public class player15 implements ContestSubmission
         // make testc ==> 9.999938929480702
 
         // Setting parent selection type and parameters.
-//        Selection.TYPE parentSelectionType = Selection.TYPE.ROUNDROBIN;
-        Selection.TYPE parentSelectionType = Selection.TYPE.TOURNAMENT;
+        Selection.SELECTION_TYPE parentSelectionType = Selection.SELECTION_TYPE.TOURNAMENT;
         HashMap<String, Double> parentSelectionParams =
                 new HashMap<String, Double>();
         parentSelectionParams.put(Selection.PARAM.PARENT_K.toString(),
@@ -204,7 +205,7 @@ public class player15 implements ContestSubmission
                 1.0 / Population.dim);
 
         // Setting survival selection type and parameters.
-        Selection.TYPE survivalSelectionType = Selection.TYPE.MUCOMMALAMBDA;
+        Selection.SURVIVAL_TYPE survivalSelectionType = Selection.SURVIVAL_TYPE.MUCOMMALAMBDA;
         HashMap<String, Double> survivalSelectionParams =
                 new HashMap<String, Double>();
 
@@ -267,29 +268,94 @@ public class player15 implements ContestSubmission
             }
         }
 
-
+        
+        // we ONLY evaluate islands, afterwards terminate. (i.e. not doing normal evolutionary loop)
+        Boolean evaluate_islands = false;
+        
+        if (evaluate_islands)
+        {
         // XXX Parameters used in Island model (for now split from rest).
         Recombination.TYPE recomb_method = Recombination.TYPE.SIMPLEARITHMETIC;
         Mutation.TYPE mutation_method = Mutation.TYPE.UNCORRELATED;
-        Selection.TYPE selection_method = Selection.TYPE.TOURNAMENT;
-        Selection.TYPE survival_method = Selection.TYPE.MUPLUSLAMBDA;
+        Selection.SELECTION_TYPE selection_method = Selection.SELECTION_TYPE.GREEDY;
+        Selection.SURVIVAL_TYPE survival_method = Selection.SURVIVAL_TYPE.MUPLUSLAMBDA;
 
         // Test island
         // (XXX Uses different random so values in myPop stay the same
         //      while Island.java develops.)
 
+        Recombination.TYPE[] recomb_types = Recombination.TYPE.values();
+        Mutation.TYPE[] mutation_types = Mutation.TYPE.values();
+        Selection.SELECTION_TYPE[] selection_types = Selection.SELECTION_TYPE.values();
+        Selection.SURVIVAL_TYPE[] survival_types = Selection.SURVIVAL_TYPE.values();
 
-        /* FIXME removed for testing since TOURNAMENT still crashes
-                 for certain parameters
-        Island island = new Island(recomb_method, mutation_method, selection_method, survival_method, popSize, evaluation_::evaluate, islandRnd_);
-        island.evolutionCycle(nChildren);
-        */
+        int nIslands = 4;
+        IslandList island_list = new IslandList(nChildren);
+        for(int i = 0; i < nIslands; i++)
+        {
+            island_list.addIsland(new Island(recomb_types[rnd_.nextInt(recomb_types.length)], mutation_types[rnd_.nextInt(mutation_types.length)],
+                selection_types[rnd_.nextInt(selection_types.length)], survival_types[rnd_.nextInt(survival_types.length)], popSize, evaluation_::evaluate, islandRnd_));
+        }
 
+        int evolveAmount = 1;
+        evals = island_list.evaluateIslands(evals, evaluations_limit_);
+        System.out.println(evaluations_limit_);
+        while(evals < evaluations_limit_)
+        {
+            // System.out.println(evals);
+            island_list.evolveIslands(evolveAmount);
+            island_list.migration();
+            evals = island_list.evaluateIslands(evals, evaluations_limit_);
+        }
+                
+        // Get individuals from the islands to print for the visualization
+        for(int i=0; i< nIslands; i++)
+        {
+            Island new_island = island_list.getIsland(i);
+            Population island_pop = new_island.getPop();
+            Recombination.TYPE recomb_method_island = new_island.getRecombinationType();
+            
+            Mutation.TYPE mutation_method_island = new_island.getMutationType();
+            Selection.SELECTION_TYPE selection_method_island = new_island.getSelectionType();
+            Selection.SURVIVAL_TYPE survival_method_island = new_island.getSurvivalType();
+            Population.Individual[] individuals_island = island_pop.getIndividuals();
+        
+            for(Population.Individual individual_island : individuals_island)
+            {
+                // Print island indicator
+                System.out.print(i+1);
+                System.out.print(",");
+                // print fitness
+                System.out.print(individual_island.fitness);
+                System.out.print(",");
+                // Print all genomes
+                double[] gen = individual_island.getGenome();
+                for (int j=0; j<gen.length; j++)
+                {
+                  if (j != gen.length-1)
+                  {
+                    System.out.print(gen[j]);
+                    System.out.print(",");
+                  }
+                  else
+                  {
+                    System.out.println(gen[j]);
+                  }
+                }
+            }
+        }
 
+        // Exit since we are only interested in island evaluation
+        System.exit(0);
+        }
+
+        
         // Initialize population
         Population myPop = new Population(popSize, evaluation_::evaluate, rnd_);
         evals = myPop.evaluate(evals, evaluations_limit_);
 
+
+      
         if (myPop.size() == popSize) {
             // calculate fitness
             while(evals < evaluations_limit_){
@@ -349,7 +415,7 @@ public class player15 implements ContestSubmission
 //                        new Population.Individual[]{myPop.getIndividuals()[0]}, new int[]{nChildren}, evaluation_::evaluate);
 
 
-                // ---------- Mutation ----------  
+                // ---------- Mutation ----------
                 childPop.mutate(rnd_, mutationType, mutationParams);
                 evals = childPop.evaluate(evals, evaluations_limit_);
 

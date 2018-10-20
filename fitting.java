@@ -8,7 +8,7 @@ import java.io.IOException;
 public class fitting
 {
     static Random rnd_;
-    
+
     public static void printException(Exception e)
     {
         System.out.print("\u001B[31m");
@@ -44,19 +44,19 @@ public class fitting
     {
         rnd_ = new Random();
         rnd_.setSeed(1);
-        
+
         String bestOfFittingFile = "fitparams/bestOfFitting.params";
         String bestOfGenerationFile = "fitparams/bestOfGeneration.params";
-        
+
         boolean print = true;
-        
+
         int evals = 0;
         int evaluations_limit_ = 500;
         
         int popSize = 25;
         
         // Setting parent selection type and parameters.
-        Selection.TYPE parentSelectionType = Selection.TYPE.TOURNAMENT;
+        Selection.SELECTION_TYPE parentSelectionType = Selection.SELECTION_TYPE.TOURNAMENT;
         HashMap<String, Double> parentSelectionParams =
                 new HashMap<String, Double>();
         parentSelectionParams.put(Selection.PARAM.PARENT_K.toString(),
@@ -78,7 +78,7 @@ public class fitting
                 2.0 / Population.dim);
 
         // Setting survival selection type and parameters.
-        Selection.TYPE survivalSelectionType = Selection.TYPE.MUCOMMALAMBDA;
+        Selection.SURVIVAL_TYPE survivalSelectionType = Selection.SURVIVAL_TYPE.MUCOMMALAMBDA;
         HashMap<String, Double> survivalSelectionParams =
                 new HashMap<String, Double>();
 
@@ -160,7 +160,7 @@ public class fitting
                     FitPopulation childPop = new FitPopulation(
                             children, paramLabels);
 
-                    // ---------- Mutation ----------  
+                    // ---------- Mutation ----------
                     childPop.mutate(rnd_, mutationType, mutationParams);
                     evals = childPop.evaluate(evals, evaluations_limit_, rnd_);
 

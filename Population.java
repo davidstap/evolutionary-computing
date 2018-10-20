@@ -65,7 +65,7 @@ public class Population
             i += n;
         }
         individuals = new Individual[i];
-        
+
         // Create copies of parents.
         i = 0;
         for (int j = 0; j < N.length; j++)
@@ -77,7 +77,7 @@ public class Population
                 i++;
             }
         }
-        
+
         evaluationFunction = evaluationFunction_;
     }
 
@@ -171,7 +171,7 @@ public class Population
             // Assign prop fitness to individual
             individuals[i].prop_fitness = Math.max(0, prop_fitness);
         }
-        
+
         // Repeat tournament selection for amount of parents needed.
         for (int i=0; i<n; i++)
         {
@@ -227,7 +227,7 @@ public class Population
     }
 
     public Individual[] parentSelection(Random rnd,
-            Selection.TYPE selectionType,
+            Selection.SELECTION_TYPE selectionType,
             HashMap<String, Double> selectionParams)
     {
 //        TODO tournament exceeds population size / parameters not hardcoded!!!
@@ -247,14 +247,14 @@ public class Population
                         this.getIndividuals(), rnd, selectionParams);
                 break;
             // FIXME move to Selection.java.
-            case ROULETTE:
-                String param1 = Selection.PARAM.PARENT_K.toString();
-                int k1 = selectionParams.containsKey(param1) ?
-                        selectionParams.get(param1).intValue() :
-                        individuals.length;
-                double S = 2.0;
-                selection = parentSelectionRouletteWheel(k1, S);
-                break;
+            // case ROULETTE:
+            //     String param1 = Selection.PARAM.PARENT_K.toString();
+            //     int k1 = selectionParams.containsKey(param1) ?
+            //             selectionParams.get(param1).intValue() :
+            //             individuals.length;
+            //     double S = 2.0;
+            //     selection = parentSelectionRouletteWheel(k1, S);
+            //     break;
             // FIXME move to Selection.java.
             case TOURNAMENT:
                 /*
@@ -316,7 +316,7 @@ public class Population
 
     // Applies survival selection onto population.
     public void survival(Population childPopulation, Random rnd,
-            Selection.TYPE selectionType,
+            Selection.SURVIVAL_TYPE selectionType,
             HashMap<String, Double> selectionParams)
             throws ArrayIndexOutOfBoundsException, IllegalArgumentException
     {
@@ -395,6 +395,11 @@ public class Population
         return individuals.clone();
     }
 
+    void changeIndividual(int i, Individual ind)
+    {
+        individuals[i] = ind;
+    }
+
     // Returns maximal fitness value found in the population.
     public double getMaxFitness()
     {
@@ -447,7 +452,7 @@ public class Population
         protected double fitness;
         protected double shared_fitness;
         public double prop_fitness;
-        
+
         // Used for ranking selection (see p81 book)
         public double selectionRanking;
         // ranking of individual. Note: worst rank = 0, best rank = mu-1
@@ -464,11 +469,11 @@ public class Population
             maxR = new double[dim];
             Arrays.fill(minR, -5.0);
             Arrays.fill(maxR, 5.0);
-            
+
             genome = new double[dim];
             sigmas = new double[dim];
             Arrays.fill(sigmas, 1.0);
-            
+
             set_fitness(0.0);
             selectionRanking = 0.0;
             prop_fitness =0.0;
@@ -516,7 +521,7 @@ public class Population
         {
             switch(mutationType)
             {
-            
+
                 case GAUSSIAN:
                     genome = Mutation.gaussian(
                             getGenome(), rnd, minR, maxR, params);
