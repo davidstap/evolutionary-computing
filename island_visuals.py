@@ -1,10 +1,24 @@
 import numpy as np
 from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
+import math
+
+# For every individual:
+# [n_island, score_1, score_2, score_3, max_island_fitness, min_island_fitness, mean_island_fitness, variance_fitness]
 
 # Load data
-# data = np.array([[1,3,4,8],[1,9.9,9.9,9.9], [1, 9.9, 9, 8],[2, 8, 4, 2],[2, 9, 4.5, 1]])
-data = np.genfromtxt('stats.csv', delimiter=',')
+# bentcigar = np.genfromtxt('stats_bentcigar.csv', delimiter=',')
+# # For katsuura and schaffers ignore 1st column, since we already know n_island
+# katsuura = np.genfromtxt('stats_katsuura.csv', delimiter=',')[:,1:]
+# schaffers = np.genfromtxt('stats_schaffers.csv', delimiter=',')[:,1:]
+# data = np.concatenate((np.concatenate((bentcigar, katsuura),axis=1), schaffers), axis=1)
+
+
+data = np.genfromtxt('stats_bentcigar.csv', delimiter=',')
+# data = np.genfromtxt('stats_katsuura.csv', delimiter=',')
+# data = np.genfromtxt('stats_schaffers.csv', delimiter=',')
+
+
 
 # X are the features, y are the island names (simply ints)
 X = data[:,1:]
@@ -19,11 +33,13 @@ colordict = {'island 1': 'blue', 'island 2': 'red', 'island 3': 'green'}
 plt.figure()
 points = []
 for i, x in enumerate(X_r):
-    # Scale is mean fitness on all 3 functions
+    # Use mean of square of scores of all 3 functions to calculate scale
     # Bigger points are fitter individuals
-    scale = np.mean(X[i])*10
-    plt.scatter(x[0], x[1], color=colordict[y[i]], s=scale, alpha=0.3)
-
+    # scale = np.mean(X[i][[0,5,10]]**2)*5
+    
+    scale = (X[i][0]**2)*5
+    
+    plt.scatter(x[0], x[1], color=colordict[y[i]], s=scale, alpha=0.2)
 
 plt.show()
 

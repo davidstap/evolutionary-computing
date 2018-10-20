@@ -42,6 +42,11 @@ test:
 	make -s testk
 	make -s tests
 
+islandstats:
+	make -s testc | grep -Ev 'java|Score|Run' > stats_bentcigar.csv
+	make -s testk | grep -Ev 'java|Score|Run' > stats_katsuura.csv
+	make -s tests | grep -Ev 'java|Score|Run' > stats_schaffers.csv	
+
 testo:
 	java $(PARAMS) -jar testrun.jar -submission=$(FILE) -evaluation=SphereEvaluation -seed=$(SEED)
 

@@ -226,7 +226,12 @@ public class player15 implements ContestSubmission
             }
         }
 
-
+        
+        // we ONLY evaluate islands, afterwards terminate. (i.e. not doing normal evolutionary loop)
+        Boolean evaluate_islands = false;
+        
+        if (evaluate_islands)
+        {
         // XXX Parameters used in Island model (for now split from rest).
         Recombination.TYPE recomb_method = Recombination.TYPE.SIMPLEARITHMETIC;
         Mutation.TYPE mutation_method = Mutation.TYPE.UNCORRELATED;
@@ -236,7 +241,6 @@ public class player15 implements ContestSubmission
         // Test island
         // (XXX Uses different random so values in myPop stay the same
         //      while Island.java develops.)
-
 
         Recombination.TYPE[] recomb_types = Recombination.TYPE.values();
         Mutation.TYPE[] mutation_types = Mutation.TYPE.values();
@@ -252,31 +256,62 @@ public class player15 implements ContestSubmission
         }
 
         int evolveAmount = 25;
-        island_list.evolveIslands(evolveAmount);
-        island_list.migration();
-        island_list.evaluateIslands(evals, evaluations_limit_);
-
+        
+        while(evals < evaluations_limit_)
+        {
+          island_list.evolveIslands(evolveAmount);
+          island_list.migration();
+          island_list.evaluateIslands(evals, evaluations_limit_);
+        }
+                
         // Get individuals from the islands to print for the visualization
-        // for(int i=0; i< nIslands; i++)
-        // {
-        //     Island new_island = island_list.getIsland(i);
-        //     Population island_pop = new_island.getPop();
-        //     Recombination.TYPE recomb_method_island = new_island.getRecombinationType();
-        //     Mutation.TYPE mutation_method_island = new_island.getMutationType();
-        //     Selection.SELECTION_TYPE selection_method_island = new_island.getSelectionType();
-        //     Selection.SURVIVAL_TYPE survival_method_island = new_island.getSurvivalType();
-        //     Population.Individual[] individuals_island = island_pop.getIndividuals();
-        //     for(Population.Individual individual_island : individuals_island)
-        //     {
-        //         System.out.println(individual_island.getGenome());
-        //     } 
+        for(int i=0; i< nIslands; i++)
+        {
+            Island new_island = island_list.getIsland(i);
+            Population island_pop = new_island.getPop();
+            Recombination.TYPE recomb_method_island = new_island.getRecombinationType();
+            
+            Mutation.TYPE mutation_method_island = new_island.getMutationType();
+            Selection.SELECTION_TYPE selection_method_island = new_island.getSelectionType();
+            Selection.SURVIVAL_TYPE survival_method_island = new_island.getSurvivalType();
+            Population.Individual[] individuals_island = island_pop.getIndividuals();
+        
+            for(Population.Individual individual_island : individuals_island)
+            {
+                // Print island indicator
+                System.out.print(i+1);
+                System.out.print(",");
+                // print fitness
+                System.out.print(individual_island.fitness);
+                System.out.print(",");
+                // Print all genomes
+                double[] gen = individual_island.getGenome();
+                for (int j=0; j<gen.length; j++)
+                {
+                  if (j != gen.length-1)
+                  {
+                    System.out.print(gen[j]);
+                    System.out.print(",");
+                  }
+                  else
+                  {
+                    System.out.println(gen[j]);
+                  }
+                }
+            }
+        }
 
-        // }
-
+        // Exit since we are only interested in island evaluation
+        System.exit(0);
+        }
+        
+        
         // Initialize population
         Population myPop = new Population(popSize, evaluation_::evaluate, rnd_);
         evals = myPop.evaluate(evals, evaluations_limit_);
 
+
+      
         if (myPop.size() == popSize) {
             // calculate fitness
             while(evals < evaluations_limit_){
