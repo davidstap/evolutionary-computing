@@ -89,65 +89,52 @@ public class Population
     // Selects n parents based on Roulette Wheel and ranking selection.
     public Individual[] parentSelectionRouletteWheel(int n, double s)
     {
-      sort();
-      setRanks();
-      setSelectionRank(s); 
-      
-      Individual[] parents = new Individual[n];
-      
-      Random rnd = new Random();
-      int currentMember = 0;
-      
-      for (int j = 0; j < n; j++)
-      {
-        double r = rnd.nextDouble();
-        int i = 0;
-        double a_i = individuals[0].selectionRanking;
-        
-        // stop when cumulative probability exceeds r,
-        // then use i for individual.
-        while (a_i < r)
+        sort();
+        // start at highest rank
+        int currentRank = individuals.length - 1;
+        // Adds to every member of population the correct rank
+        // (based on fitness score).
+        // Lowest rank = 0
+        // Highest rank = mu-1
+        // assumption: population is sorted before setRanks() is called
+        for (int i=0; i<individuals.length; i++)
         {
-          i+=1;
-          // Update cumulative probability distribution.
-          a_i += individuals[i].selectionRanking;
+            individuals[i].rank = currentRank;
+            currentRank -= 1;
         }
-        parents[j] = individuals[i];
-      }
-      return parents;
-    }
-
-    // TODO move to Selection.java.
-    // Adds to every member of population the correct rank
-    // (based on fitness score).
-    // Lowest rank = 0
-    // Highest rank = mu-1
-    // assumption: population is sorted before setRanks() is called
-    private void setRanks()
-    {
-      // start at highest rank
-      int currentRank = individuals.length - 1;
-      
-      for (int i=0; i<individuals.length; i++)
-      {
-        individuals[i].rank = currentRank;
-        currentRank -= 1;
-      }
-    }
-    
-    // TODO move to Selection.java.
-    // Adds correct value for selectionRank to every individual in population.
-    private void setSelectionRank(double s)
-    {
-      for (int i=0; i<individuals.length; i++)
-      {
-        // formula for selectionRank (see book p82)
-        double mu = (double) individuals.length;
-        double sr = (2.0-s)/(mu) + (2.0*individuals[i].rank*(s-1)) /
-                (mu*(mu-1.0));
-        // System.out.println(sr);
-        individuals[i].selectionRanking = sr;
-      }
+        // Adds correct value for selectionRank to every individual in population.
+        for (int i=0; i<individuals.length; i++)
+        {
+            // formula for selectionRank (see book p82)
+            double mu = (double) individuals.length;
+            double sr = (2.0-s)/(mu) + (2.0*individuals[i].rank*(s-1)) /
+                    (mu*(mu-1.0));
+            // System.out.println(sr);
+            individuals[i].selectionRanking = sr;
+        }
+        
+        Individual[] parents = new Individual[n];
+        
+        Random rnd = new Random();
+        int currentMember = 0;
+        
+        for (int j = 0; j < n; j++)
+        {
+            double r = rnd.nextDouble();
+            int i = 0;
+            double a_i = individuals[0].selectionRanking;
+            
+            // stop when cumulative probability exceeds r,
+            // then use i for individual.
+            while (a_i < r)
+            {
+                i+=1;
+                // Update cumulative probability distribution.
+                a_i += individuals[i].selectionRanking;
+            }
+            parents[j] = individuals[i];
+        }
+        return parents;
     }
 
     // TODO move to Selection.java.
@@ -163,25 +150,24 @@ public class Population
         {
             numbers.add(i);
         }
-
-
+        
         // Compute mean and sd for proportional fitness function
         double mean = 0.0;
         for (int i = 0; i < individuals.length; i++)
         {
-            mean += individuals[i].fitness;
+            mean += individuals[i].get_fitness();
         }
         mean /= individuals.length;
         double sd = 0.0;
         for (int i = 0; i < individuals.length; i++)
         {
-            sd += Math.pow(individuals[i].fitness - mean, 2);
+            sd += Math.pow(individuals[i].get_fitness() - mean, 2);
         }
         sd = Math.sqrt(sd/individuals.length);
         for (int i = 0; i < individuals.length; i++)
         {
             // Function found in book pg: 81.
-            double prop_fitness = individuals[i].fitness - (mean - c*sd);
+            double prop_fitness = individuals[i].get_fitness() - (mean - c*sd);
             // Assign prop fitness to individual
             individuals[i].prop_fitness = Math.max(0, prop_fitness);
         }
@@ -233,8 +219,8 @@ public class Population
                 break;
             }
             // Evaluate individual.
-            individuals[i].fitness = (double) evaluationFunction.apply(
-                    individuals[i].getGenome());
+            individuals[i].set_fitness((double) evaluationFunction.apply(
+                    individuals[i].getGenome()));
             evals++;
         }
         return evals;
@@ -271,6 +257,7 @@ public class Population
                 break;
             // FIXME move to Selection.java.
             case TOURNAMENT:
+                /*
                 String param2 = Selection.PARAM.PARENT_K.toString();
                 int k2 = selectionParams.containsKey(param2) ?
                         selectionParams.get(param2).intValue() :
@@ -278,6 +265,9 @@ public class Population
                 int the_real_k = 6;
                 int c = 2;
                 selection = selectParentsTournament(k2, the_real_k, c);
+                */
+                selection = Selection.tournament(
+                        this.getIndividuals(), rnd, selectionParams);
                 break;
             default:
                 throw new IllegalArgumentException("\n\t" +
@@ -350,8 +340,11 @@ public class Population
                 selection = Selection.mu_comma_lambda(
                     this.getIndividuals(), childPopulation.getIndividuals());
                 break;
-            // TODO implement
             case TOURNAMENT:
+                selection = Selection.tournament(
+                        this.getIndividuals(), childPopulation.getIndividuals(),
+                        rnd, selectionParams);
+                break;
             default:
                 throw new IllegalArgumentException("\n\t" +
                         Population.class.getName() +
@@ -368,7 +361,7 @@ public class Population
     public static Individual[] sort(Individual[] individuals_)
     {
         Arrays.sort(individuals_, (i1, i2) -> Double.compare(
-                i2.fitness, i1.fitness));
+                i2.get_fitness(), i1.get_fitness()));
         return individuals_;
     }
 
@@ -376,7 +369,7 @@ public class Population
     public static Individual[] reverseSort(Individual[] individuals_)
     {
         Arrays.sort(individuals_, (i1, i2) -> Double.compare(
-                i1.fitness, i2.fitness));
+                i1.get_fitness(), i2.get_fitness()));
         return individuals_;
     }
 
@@ -408,7 +401,7 @@ public class Population
         if (individuals.length > 0)
         {
             sort();
-            return individuals[0].fitness;
+            return individuals[0].get_fitness();
         }
         return 0.0;
     }
@@ -427,6 +420,20 @@ public class Population
         }
     }
 
+    public void setSharedFitness(double sigma, double alpha)
+    {
+        setSharedFitness(individuals, sigma, alpha);
+    }
+
+    public static void setSharedFitness(
+            Individual[] individuals_, double sigma, double alpha)
+    {
+        for (Individual individual : individuals_)
+        {
+            individual.setSharedFitness(individuals_, sigma, alpha);
+        }
+    }
+
     // Subclass to contain one individual of the population.
     public static class Individual implements Comparable<Individual>
     {
@@ -437,7 +444,8 @@ public class Population
 
         protected double[] genome;
         protected double[] sigmas;
-        public double fitness;
+        protected double fitness;
+        protected double shared_fitness;
         public double prop_fitness;
         
         // Used for ranking selection (see p81 book)
@@ -461,7 +469,7 @@ public class Population
             sigmas = new double[dim];
             Arrays.fill(sigmas, 1.0);
             
-            fitness = 0.0;
+            set_fitness(0.0);
             selectionRanking = 0.0;
             prop_fitness =0.0;
             rank = 0;
@@ -481,6 +489,13 @@ public class Population
                     new double[dim], rnd, maxR[0] - minR[0],
                     minR[0], maxR[0], 1);
             */
+        }
+
+        // Creates individual with given genome values.
+        public Individual(double[] genome_)
+        {
+            this();
+            genome = genome_;
         }
 
         // Creates individual with given genome and sigma values.
@@ -541,16 +556,57 @@ public class Population
             return Math.round(v * Math.pow(10, n)) / Math.pow(10, n);
         }
 
+        // Sets fitness value using relative genome distances.
+        // XXX Seems to have no effect on outcomes.
+        public void setSharedFitness(
+                Individual[] individuals_, double sigma, double alpha)
+        {
+            double sum = 0.0;
+            for (Individual individual : individuals_)
+            {
+                double[] genome_ = individual.getGenome();
+                double d = 0.0;
+                for (int i = 0; i < genome.length; i++)
+                {
+                    d += genome[i] - genome_[i];
+                }
+                d = Math.sqrt(Math.abs(sum));
+                if (d <= sigma)
+                {
+                    sum += 1 - Math.pow((d / sigma), alpha);
+                }
+            }
+            shared_fitness = fitness / sum;
+        }
+
+        public void set_fitness(double value, double shared_value)
+        {
+            fitness = value;
+            shared_fitness = shared_value;
+        }
+
+        public void set_fitness(double value)
+        {
+            fitness = value;
+            shared_fitness = value;
+        }
+
+        public double get_fitness()
+        {
+            return shared_fitness;
+        }
+
         @Override
         public int compareTo(Individual individual)
         {
-            return Double.compare(fitness, individual.fitness);
+            return Double.compare(get_fitness(), individual.get_fitness());
         }
 
 
 
 
 
+/*
         public String toString()
         {
             String s = Double.toString(
@@ -565,12 +621,14 @@ public class Population
             }
             return s.substring(0, s.length() - 2) + "]";
         }
+*/
 
-/*
+
+
         public String toString()
         {
             String s = Double.toString(
-                    fitness)
+                    get_fitness())
                     + " [";
             for (int i = 0; i < genome.length; i++)
             {
@@ -580,7 +638,6 @@ public class Population
             }
             return s.substring(0, s.length() - 2) + "]";
         }
-*/
 
 
 

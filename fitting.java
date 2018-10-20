@@ -16,6 +16,30 @@ public class fitting
         System.out.print("\u001B[0m");
     }
     
+    public static FitPopulation addInitToGenomes(
+            FitPopulation pop, String fpath)
+            throws IOException, InterruptedException
+    {
+        HashMap<String, Double> hm = InOut.load(InOut.command(fpath));
+        String[] labels = pop.labels;
+        Population.Individual[] individuals_ = pop.getIndividuals();
+        Population.Individual[] individuals =
+                new Population.Individual[individuals_.length];
+        for (int i = 0; i < individuals_.length; i++)
+        {
+            double[] genome = individuals_[i].getGenome();
+            for (int j = 0; j < genome.length; j++)
+            {
+                if (hm.containsKey(labels[j]))
+                {
+                    genome[j] = hm.get(labels[j]) + genome[j] / 5.0;
+                }
+            }
+            individuals[i] = new Population.Individual(genome);
+        }
+        return new FitPopulation(individuals, pop.labels);
+    }
+    
     public static void run()
     {
         rnd_ = new Random();
@@ -27,21 +51,23 @@ public class fitting
         boolean print = true;
         
         int evals = 0;
-        int evaluations_limit_ = 400;
+        int evaluations_limit_ = 500;
         
-        int popSize = 8;
+        int popSize = 25;
         
         // Setting parent selection type and parameters.
-        Selection.TYPE parentSelectionType = Selection.TYPE.ROUNDROBIN;
+        Selection.TYPE parentSelectionType = Selection.TYPE.TOURNAMENT;
         HashMap<String, Double> parentSelectionParams =
                 new HashMap<String, Double>();
         parentSelectionParams.put(Selection.PARAM.PARENT_K.toString(),
-                (double)popSize*2);
-        parentSelectionParams.put(Selection.PARAM.ROUNDROBIN_Q.toString(),
-                (double)popSize/2);
+                (double)popSize * 2);
+//        parentSelectionParams.put(Selection.PARAM.ROUNDROBIN_Q.toString(),
+//                (double)popSize / 2);
+        parentSelectionParams.put(Selection.PARAM.TOURNAMENT_SIZE.toString(),
+                2.0);
 
         // Setting recombination type and parameters.
-        Recombination.TYPE recombinationType = Recombination.TYPE.UNIFORM;
+        Recombination.TYPE recombinationType = Recombination.TYPE.ONEPOINT;
         HashMap<String, Double> recombinationParams =
                 new HashMap<String, Double>();
 
@@ -74,7 +100,8 @@ public class fitting
             Population.PARAM.SIZE.toString(),
 //            Population.PARAM.NCHILDREN.toString(),
             Selection.PARAM.PARENT_K.toString(),
-            Selection.PARAM.ROUNDROBIN_Q.toString(),
+//            Selection.PARAM.ROUNDROBIN_Q.toString(),
+            Selection.PARAM.TOURNAMENT_SIZE.toString(),
             Mutation.PARAM.MUTATIONRATE.toString(),
             Mutation.PARAM.UNCORRELATED_THETA.toString(),
             Mutation.PARAM.UNCORRELATED_THETA_.toString(),
@@ -85,12 +112,20 @@ public class fitting
         FitPopulation myPop = new FitPopulation(popSize, rnd_, paramLabels);
         try
         {
+//            myPop = addInitToGenomes(
+//                    myPop, "cat fitparams/good_fittedSchaffers.params");
             evals = myPop.evaluate(evals, evaluations_limit_, rnd_);
         }
         catch (IOException e)
         {
             printException(e);
         }
+/*
+        catch (InterruptedException e)
+        {
+            printException(e);
+        }
+*/
 
         if (myPop.size() == popSize) {
             // calculate fitness

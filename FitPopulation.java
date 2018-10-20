@@ -10,10 +10,10 @@ import java.util.HashMap;
 
 public class FitPopulation extends Population
 {
-    private static final int nRuns = 5;
+    private static final int nRuns = 3;
     private static final String tmpFile = "fitparams/currentEvaluation.params";
     
-    private String[] labels;
+    public String[] labels;
     
     public FitPopulation(int size, Random rnd, String[] labels_)
     {
@@ -62,6 +62,7 @@ public class FitPopulation extends Population
             // Evaluate individual.
             ((FitIndividual)individuals[i]).evaluate(rnd);
             evals++;
+            System.err.println(Integer.toString(evals));
         }
         return evals;
     }
@@ -80,7 +81,12 @@ public class FitPopulation extends Population
                         || labels[i] ==
                         Selection.PARAM.SURVIVALROUNDROBIN_Q.toString())
                 {
-                    minR[i] = 1.0;
+                    minR[i] = 300.0;
+                    maxR[i] = minR[i];
+                }
+                else if (labels[i] == Selection.PARAM.TOURNAMENT_SIZE.toString())
+                {
+                    minR[i] = 2.0;
                     maxR[i] = minR[i];
                 }
                 else if (labels[i] == Mutation.PARAM.MUTATIONRATE.toString()
@@ -116,13 +122,21 @@ public class FitPopulation extends Population
                 }
                 else if (minR[i] == maxR[i])
                 {
-                    genome[i] = minR[i] + rnd.nextDouble() * 10;
+                    if (labels[i] == Selection.PARAM.TOURNAMENT_SIZE.toString())
+                    {
+                        genome[i] = minR[i] + rnd.nextDouble() * 5;
+                    }
+                    else
+                    {
+                        genome[i] = minR[i] + rnd.nextDouble() * 200;
+                    }
                 }
                 else
                 {
                     genome[i] = (minR[i] + maxR[i]) / 2.0 +
                             (rnd.nextDouble() - 0.5) * (maxR[i] - minR[i]);
                 }
+                sigmas[i] = minR[i] / 2.0 + 1;
             }
         }
         
@@ -131,7 +145,7 @@ public class FitPopulation extends Population
             setLimits(labels);
             genome = individual.genome.clone();
             sigmas = individual.sigmas.clone();
-            fitness = individual.fitness;
+            set_fitness(individual.fitness, individual.shared_fitness);
             prop_fitness = individual.prop_fitness;
             selectionRanking = individual.selectionRanking;
             rank = individual.rank;
@@ -152,7 +166,7 @@ public class FitPopulation extends Population
                 saveGenome(tmpFile);
                 for (int i = 0; i < nRuns; i++)
                 {
-                    String cmdOut = InOut.command("make tests SEED=" +
+                    String cmdOut = InOut.command("make testk SEED=" +
                             Integer.toString(rnd.nextInt(Integer.MAX_VALUE)) +
                             " PARAMSFILE=" + tmpFile);
                     BufferedReader reader = new BufferedReader(
@@ -170,18 +184,19 @@ public class FitPopulation extends Population
                         }
                     }
                 }
-                fitness = 0;
+                double tmp_fitness = 0.0;
                 for (double value : runs)
                 {
-                    fitness += value;
+                    tmp_fitness += value;
                 }
-                fitness /= nRuns;
+                tmp_fitness /= nRuns;
                 double tmp = 0.0;
                 for (double value : runs)
                 {
-                    tmp += Math.pow((value - fitness), 2);
+                    tmp += Math.pow((value - tmp_fitness), 2);
                 }
-                fitness /= (Math.sqrt(tmp / (nRuns - 1.0)) + 1);
+                tmp_fitness -= (Math.sqrt(tmp / (nRuns - 1.0)));
+                set_fitness(tmp_fitness);
             }
             catch (IOException e)
             {

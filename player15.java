@@ -20,6 +20,11 @@ public class player15 implements ContestSubmission
     ContestEvaluation evaluation_;
     private int evaluations_limit_;
 
+    boolean isMultimodal;
+    boolean hasStructure;
+    boolean isSeparable;
+
+
     public player15()
     {
         rnd_ = new Random();
@@ -42,7 +47,6 @@ public class player15 implements ContestSubmission
         // Get evaluation properties
         Properties props = evaluation.getProperties();
 
-        /*
         Set keys = props.keySet();
         Iterator itr = keys.iterator();
         String propStr;
@@ -52,15 +56,14 @@ public class player15 implements ContestSubmission
             System.out.println(" -- | " + propStr +
                     " = " + props.getProperty(propStr));
         }
-        */
 
         // Get evaluation limit
         evaluations_limit_ = Integer.parseInt(props.getProperty("Evaluations"));
         // Property keys depend on specific evaluation
         // E.g. double param = Double.parseDouble(props.getProperty("property_name"));
-        boolean isMultimodal = Boolean.parseBoolean(props.getProperty("Multimodal"));
-        boolean hasStructure = Boolean.parseBoolean(props.getProperty("Regular"));
-        boolean isSeparable = Boolean.parseBoolean(props.getProperty("Separable"));
+        isMultimodal = Boolean.parseBoolean(props.getProperty("Multimodal"));
+        hasStructure = Boolean.parseBoolean(props.getProperty("Regular"));
+        isSeparable = Boolean.parseBoolean(props.getProperty("Separable"));
 
         // Do sth with property values, e.g. specify relevant settings of your algorithm
         if(isMultimodal){
@@ -105,6 +108,8 @@ public class player15 implements ContestSubmission
         HashSet<String> survivalSelectionParamsSet = new HashSet<String>();
         survivalSelectionParamsSet.add(
                 Selection.PARAM.SURVIVALROUNDROBIN_Q.toString());
+        survivalSelectionParamsSet.add(
+                Selection.PARAM.TOURNAMENT_SIZE.toString());
         for (String key : params.keySet())
         {
             value = params.get(key);
@@ -146,17 +151,17 @@ public class player15 implements ContestSubmission
         // EA Parameters
         int evals = 0;
 
-        int popSize = 12;
+        int popSize = 512;
         int nChildren = popSize * 2;
 
         // TODO Put into the Hashmaps when functions are moved to Selection.java
         // Tournament selection candidates
-        int k = 4;
+//        int k = 4;
         // constant for proportional fitness
-        int c = 2;
+//        int c = 2;
 //        int nParents = popSize / 2;
         // Roulette wheel parameter S. Range: 1.0 < s  2.0
-        double sRW = 2.0;
+//        double sRW = 2.0;
 
 /*
         popSize = 4;
@@ -180,11 +185,13 @@ public class player15 implements ContestSubmission
                 new HashMap<String, Double>();
         parentSelectionParams.put(Selection.PARAM.PARENT_K.toString(),
                 (double)nChildren);
-        parentSelectionParams.put(Selection.PARAM.ROUNDROBIN_Q.toString(),
-                (double)nChildren);
+//        parentSelectionParams.put(Selection.PARAM.ROUNDROBIN_Q.toString(),
+//                (double)nChildren);
+        parentSelectionParams.put(Selection.PARAM.TOURNAMENT_SIZE.toString(),
+                2.0);//(double)nChildren / 8 + 1);
 
         // Setting recombination type and parameters.
-        Recombination.TYPE recombinationType = Recombination.TYPE.UNIFORM;
+        Recombination.TYPE recombinationType = Recombination.TYPE.ONEPOINT;
         HashMap<String, Double> recombinationParams =
                 new HashMap<String, Double>();
 //        recombinationParams.put(Recombination.PARAM.ALPHA.toString(),
@@ -200,6 +207,40 @@ public class player15 implements ContestSubmission
         Selection.TYPE survivalSelectionType = Selection.TYPE.MUCOMMALAMBDA;
         HashMap<String, Double> survivalSelectionParams =
                 new HashMap<String, Double>();
+
+
+        if (!hasStructure && !isMultimodal && !isSeparable)
+        {
+            popSize = (int)7.930876913588633;
+            parentSelectionParams.put(Selection.PARAM.PARENT_K.toString(),
+                    9.165730808500385);
+            parentSelectionParams.put(Selection.PARAM.TOURNAMENT_SIZE.toString(),
+                    2.0);
+            mutationParams.put(Mutation.PARAM.MUTATIONRATE.toString(),
+                    0.15674689056984625);
+            mutationParams.put(Mutation.PARAM.UNCORRELATED_THETA.toString(),
+                    -1.095704438555477);
+            mutationParams.put(Mutation.PARAM.UNCORRELATED_THETA_.toString(),
+                    0.45324532201202644);
+            mutationParams.put(Mutation.PARAM.UNCORRELATED_ETHA.toString(),
+                    -0.6788386351829894);
+        }
+        else if (hasStructure && isMultimodal && !isSeparable)
+        {
+            popSize = (int)374.9727097436253;
+            parentSelectionParams.put(Selection.PARAM.PARENT_K.toString(),
+                    454.10717601583553);
+            parentSelectionParams.put(Selection.PARAM.TOURNAMENT_SIZE.toString(),
+                    4.308888458176746);
+            mutationParams.put(Mutation.PARAM.MUTATIONRATE.toString(),
+                    0.15674689056984625);
+            mutationParams.put(Mutation.PARAM.UNCORRELATED_THETA.toString(),
+                    0.6114465295478755);
+            mutationParams.put(Mutation.PARAM.UNCORRELATED_THETA_.toString(),
+                    0.7648987819482205);
+            mutationParams.put(Mutation.PARAM.UNCORRELATED_ETHA.toString(),
+                    0.005432546314306943);
+        }
 
 
         if (paramsData != null)

@@ -19,6 +19,7 @@ public class Selection
     public enum PARAM {
         PARENT_K,
         ROUNDROBIN_Q,
+        TOURNAMENT_SIZE,
         SURVIVALROUNDROBIN_Q
     }
 
@@ -104,12 +105,6 @@ public class Selection
     /**************************************************************************
        Parent selection
     **************************************************************************/
-
-    /* TODO
-    // Selects k individuals based on Roulette Wheel and ranking selection.
-    public static Population.Individual[] rouletteWheel(
-            Population.Individuals[] individuals, int k, double s)
-    */
 
     // Calls uniform after unpacking parameters.
     public static Population.Individual[] uniform(
@@ -207,6 +202,65 @@ public class Selection
         return individuals;
     }
 
+    // Calls tournament after unpacking parameters.
+    public static Population.Individual[] tournament(
+            Population.Individual[] individuals, Random rnd,
+            HashMap<String, Double> params)
+    {
+        String param = PARAM.PARENT_K.toString();
+        int k = params.containsKey(param) ?
+                params.get(param).intValue() :
+                individuals.length;
+        param = PARAM.TOURNAMENT_SIZE.toString();
+        int size = params.containsKey(param) ?
+                params.get(param).intValue() :
+                individuals.length / 2 + 1;
+        return tournament(individuals, rnd, k, size);
+    }
+
+    // Selects k individuals based on tournament selection
+    // using given tournament size.
+    public static Population.Individual[] tournament(
+            Population.Individual[] individuals_, Random rnd, int k, int size)
+    {
+        Population.Individual[] individuals = new Population.Individual[k];
+        Population.Individual tmp;
+        for (int i = 0; i < k; i++)
+        {
+            individuals[i] = individuals_[rnd.nextInt(individuals_.length)];
+            for (int j = 1; j < size; j++)
+            {
+                tmp = individuals_[rnd.nextInt(individuals_.length)];
+                if (tmp.get_fitness() > individuals[i].get_fitness())
+                {
+                    individuals[i] = tmp;
+                }
+            }
+        }
+        return individuals;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     /**************************************************************************
        Survival selection
@@ -287,6 +341,18 @@ public class Selection
         children = Population.sort(children);
         return Arrays.copyOfRange(children, 0, parents.length);
     }
+
+    // Calls tournament after combining parents and children parameters.
+    public static Population.Individual[] tournament(
+            Population.Individual[] parents, Population.Individual[] children,
+            Random rnd, HashMap<String, Double> params)
+    {
+        Population.Individual[] individuals = individualsAND(
+            parents, children);
+        individuals = tournament(individuals, rnd, params);
+        return Arrays.copyOfRange(individuals, 0, parents.length);
+    }
+
 
     /**************************************************************************
        Other selection
