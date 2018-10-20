@@ -261,10 +261,14 @@ public class player15 implements ContestSubmission
         // {
         //     Island new_island = island_list.getIsland(i);
         //     Population island_pop = new_island.getPop();
-        //     Population.Individual[] indvids = island_pop.getIndividuals();
-        //     for(Population.Individual invid : indvids)
+        //     Recombination.TYPE recomb_method_island = new_island.getRecombinationType();
+        //     Mutation.TYPE mutation_method_island = new_island.getMutationType();
+        //     Selection.SELECTION_TYPE selection_method_island = new_island.getSelectionType();
+        //     Selection.SURVIVAL_TYPE survival_method_island = new_island.getSurvivalType();
+        //     Population.Individual[] individuals_island = island_pop.getIndividuals();
+        //     for(Population.Individual individual_island : individuals_island)
         //     {
-        //         System.out.println(invid.getGenome());
+        //         System.out.println(individual_island.getGenome());
         //     } 
 
         // }

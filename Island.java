@@ -93,6 +93,27 @@ public class Island {
         */
     }
 
+    Recombination.TYPE getRecombinationType()
+    {
+    	return this.recomb_method;
+    }
+
+    Mutation.TYPE getMutationType()
+    {
+    	return this.mutation_method;
+    }
+
+    Selection.SELECTION_TYPE getSelectionType()
+    {
+    	return this.selection_method;
+    }
+
+   	Selection.SURVIVAL_TYPE getSurvivalType() 
+   	{
+   		return this.survival_method;
+   	}
+
+
     Population getPop()
     {
         return this.subpop;
