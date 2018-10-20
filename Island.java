@@ -48,6 +48,10 @@ public class Island {
         survival_selection(childPop);
     }
 
+    void evaluation(int evals, int evaluation_limit)
+    {
+    	this.subpop.evaluate(evals, evaluation_limit);
+    }
 
     // Mutate population of island
     private Population mutate(Population pop)
@@ -93,4 +97,5 @@ public class Island {
     {
         return this.subpop;
     }
+
 }

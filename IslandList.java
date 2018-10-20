@@ -75,4 +75,12 @@ public class IslandList {
             }
         }
     }
+
+    void evaluateIslands(int evals, int evaluations_limit)
+    {
+        for(Island island: this.island_list)
+        {
+            island.evaluation(evals, evaluations_limit);
+        }
+    }
 }

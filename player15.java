@@ -254,7 +254,20 @@ public class player15 implements ContestSubmission
         int evolveAmount = 25;
         island_list.evolveIslands(evolveAmount);
         island_list.migration();
+        island_list.evaluateIslands(evals, evaluations_limit_);
 
+        // Get individuals from the islands to print for the visualization
+        // for(int i=0; i< nIslands; i++)
+        // {
+        //     Island new_island = island_list.getIsland(i);
+        //     Population island_pop = new_island.getPop();
+        //     Population.Individual[] indvids = island_pop.getIndividuals();
+        //     for(Population.Individual invid : indvids)
+        //     {
+        //         System.out.println(invid.getGenome());
+        //     } 
+
+        // }
 
         // Initialize population
         Population myPop = new Population(popSize, evaluation_::evaluate, rnd_);
