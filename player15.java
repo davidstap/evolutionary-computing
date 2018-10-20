@@ -228,7 +228,7 @@ public class player15 implements ContestSubmission
 
         
         // we ONLY evaluate islands, afterwards terminate. (i.e. not doing normal evolutionary loop)
-        Boolean evaluate_islands = false;
+        Boolean evaluate_islands = true;
         
         if (evaluate_islands)
         {
@@ -255,13 +255,15 @@ public class player15 implements ContestSubmission
                 selection_types[rnd_.nextInt(selection_types.length)], survival_types[rnd_.nextInt(survival_types.length)], popSize, evaluation_::evaluate, islandRnd_));
         }
 
-        int evolveAmount = 25;
-        
+        int evolveAmount = 1;
+        evals = island_list.evaluateIslands(evals, evaluations_limit_);
+        System.out.println(evaluations_limit_);
         while(evals < evaluations_limit_)
         {
-          island_list.evolveIslands(evolveAmount);
-          island_list.migration();
-          island_list.evaluateIslands(evals, evaluations_limit_);
+            // System.out.println(evals);
+            island_list.evolveIslands(evolveAmount);
+            island_list.migration();
+            evals = island_list.evaluateIslands(evals, evaluations_limit_);
         }
                 
         // Get individuals from the islands to print for the visualization

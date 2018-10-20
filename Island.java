@@ -48,9 +48,10 @@ public class Island {
         survival_selection(childPop);
     }
 
-    void evaluation(int evals, int evaluation_limit)
+    public int evaluation(int evals, int evaluation_limit)
     {
-    	this.subpop.evaluate(evals, evaluation_limit);
+    	evals = this.subpop.evaluate(evals, evaluation_limit);
+    	return evals;
     }
 
     // Mutate population of island
@@ -76,7 +77,7 @@ public class Island {
         return this.subpop.parentSelection(this.rnd, this.selection_method, this.selection_params);
     }
 
-//    TODO ADD DIFFERENT SURVIVAL SELECTION METHODS
+//    TODO ADD DIFFERENT SURVIVAL SELECTION_TYPE METHODS
     private void survival_selection(Population childPop)
     {
         // FIXME changed with addition of Selection.TYPE and Selection.PARAM

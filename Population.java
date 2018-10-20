@@ -261,14 +261,14 @@ public class Population
                         this.getIndividuals(), rnd, selectionParams);
                 break;
             // FIXME move to Selection.java.
-            case ROULETTE:
-                String param1 = Selection.PARAM.PARENT_K.toString();
-                int k1 = selectionParams.containsKey(param1) ?
-                        selectionParams.get(param1).intValue() :
-                        individuals.length;
-                double S = 2.0;
-                selection = parentSelectionRouletteWheel(k1, S);
-                break;
+            // case ROULETTE:
+            //     String param1 = Selection.PARAM.PARENT_K.toString();
+            //     int k1 = selectionParams.containsKey(param1) ?
+            //             selectionParams.get(param1).intValue() :
+            //             individuals.length;
+            //     double S = 2.0;
+            //     selection = parentSelectionRouletteWheel(k1, S);
+            //     break;
             // FIXME move to Selection.java.
             case TOURNAMENT:
                 String param2 = Selection.PARAM.PARENT_K.toString();

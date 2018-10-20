@@ -76,11 +76,13 @@ public class IslandList {
         }
     }
 
-    void evaluateIslands(int evals, int evaluations_limit)
+    public int evaluateIslands(int evals, int evaluations_limit)
     {
-        for(Island island: this.island_list)
+        for(Island island: this.    island_list)
         {
-            island.evaluation(evals, evaluations_limit);
+            evals = island.evaluation(evals, evaluations_limit);
         }
+        return evals;
+
     }
 }
