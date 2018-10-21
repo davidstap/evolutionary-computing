@@ -2,6 +2,7 @@ tmp/
 stat/data/
 stat/old_data/
 stat/testdata/
+stat/islands/
 fitparams/
 
 *~

@@ -139,7 +139,7 @@ public class player15 implements ContestSubmission
     {
         // Run your algorithm here
 
-        boolean print = true;
+        boolean print = false;
 
         Boolean evaluate_islands = false;
 
@@ -155,8 +155,10 @@ public class player15 implements ContestSubmission
         // EA Parameters
         int evals = 0;
 
-        int popSize = 512;
-        int nChildren = popSize * 2;
+//        int popSize = 512;
+//        int nChildren = popSize * 2;
+        int popSize = 12;
+        int nChildren = 8;
 
         // TODO Put into the Hashmaps when functions are moved to Selection.java
         // Tournament selection candidates
@@ -304,8 +306,10 @@ public class player15 implements ContestSubmission
         Selection.SELECTION_TYPE[] selection_types = Selection.SELECTION_TYPE.values();
         Selection.SURVIVAL_TYPE[] survival_types = Selection.SURVIVAL_TYPE.values();
 
-        int nIslands = 4;
-        IslandList island_list = new IslandList(nChildren);
+        popSize = 12;
+        nChildren = 8;
+        int nIslands = 6;
+        IslandList island_list = new IslandList(nIslands);
         for(int i = 0; i < nIslands; i++)
         {
             island_list.addIsland(new Island(recomb_types[rnd_.nextInt(recomb_types.length)], mutation_types[rnd_.nextInt(mutation_types.length)],
@@ -314,15 +318,39 @@ public class player15 implements ContestSubmission
 
         int evolveAmount = 1;
         evals = island_list.evaluateIslands(evals, evaluations_limit_);
-        System.out.println(evaluations_limit_);
+//        System.out.println(evaluations_limit_);
         while(evals < evaluations_limit_)
         {
+            if (print)
+            {
+                System.out.println();
+                for (int i = 0; i < nIslands; i++)
+                {
+                    Population thisPop = island_list.getIsland(i).getPop();
+                    thisPop.sort();
+                    thisPop.print();
+                }
+            }
             // System.out.println(evals);
             island_list.evolveIslands(evolveAmount);
             island_list.migration();
             evals = island_list.evaluateIslands(evals, evaluations_limit_);
         }
-                
+        System.out.println();
+        /*
+        if (print)
+        {
+            for (int i = 0; i < nIslands; i++)
+            {
+                Population thisPop = island_list.getIsland(i).getPop();
+                thisPop.sort();
+                thisPop.print();
+            }
+            System.out.println();
+        }
+        */
+        
+        /*
         // Get individuals from the islands to print for the visualization
         for(int i=0; i< nIslands; i++)
         {
@@ -359,9 +387,10 @@ public class player15 implements ContestSubmission
                 }
             }
         }
+        */
 
         // Exit since we are only interested in island evaluation
-        System.exit(0);
+        return;
         }
 
         
@@ -378,6 +407,7 @@ public class player15 implements ContestSubmission
 
                 if (print)
                 {
+                    System.out.println();
                     myPop.sort();
                     myPop.print();
                 }
@@ -461,6 +491,7 @@ public class player15 implements ContestSubmission
 
         if (print)
         {
+            System.out.println();
             myPop.sort();
             myPop.print();
             System.out.println();

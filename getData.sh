@@ -12,24 +12,33 @@ N=100
 make
 mkdir "$1"
 
-mydir="$1/cigar/"
+mydir="$1/katsuura2/"
 mkdir $mydir
-for (( i = 0; i < $N; i++ )) do
-    make testc SEED=$RANDOM > $mydir$i.out
-    echo "c"$i
-done
-
-mydir="$1/schaffers/"
-mkdir $mydir
-for (( i = 0; i < $N; i++ )) do
-    make tests SEED=$RANDOM > $mydir$i.out
-    echo "s"$i
-done
-
-mydir="$1/katsuura/"
-mkdir $mydir
-for (( i = 0; i < $N; i++ )) do
+for (( i = 41; i < 47; i++ )) do
     make testk SEED=$RANDOM > $mydir$i.out
     echo "k"$i
 done
+
+
+#mydir="$1/cigar/"
+#mkdir $mydir
+#for (( i = 0; i < $N; i++ )) do
+#    make testc SEED=$RANDOM > $mydir$i.out
+#    echo "c"$i
+#done
+
+#mydir="$1/schaffers/"
+#mkdir $mydir
+#for (( i = 0; i < $N; i++ )) do
+#    make tests SEED=$RANDOM > $mydir$i.out
+#    echo "s"$i
+#done
+
+#mydir="$1/katsuura/"
+#mkdir $mydir
+#for (( i = 0; i < $N; i++ )) do
+#    make testk SEED=$RANDOM > $mydir$i.out
+#    echo "k"$i
+#done
+
 

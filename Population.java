@@ -418,7 +418,6 @@ public class Population
 
     public void print()
     {
-        System.out.println();
         for (int i = 0; i < individuals.length; i++)
         {
             System.out.println(individuals[i]);
