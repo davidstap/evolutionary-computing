@@ -62,7 +62,8 @@ public class FitPopulation extends Population
             // Evaluate individual.
             ((FitIndividual)individuals[i]).evaluate(rnd);
             evals++;
-            System.err.println(Integer.toString(evals));
+            System.err.println(Integer.toString(evals) + " || " +
+                    Double.toString(individuals[i].get_fitness()));
         }
         return evals;
     }
@@ -93,11 +94,11 @@ public class FitPopulation extends Population
                         || labels[i] == Recombination.PARAM.ALPHA.toString()
                         // XXX is it useful to keep these small?
                         || labels[i] ==
-                        Mutation.PARAM.UNCORRELATED_THETA.toString()
+                        Mutation.PARAM.UNCORRELATED_TAU.toString()
                         || labels[i] ==
-                        Mutation.PARAM.UNCORRELATED_THETA_.toString()
+                        Mutation.PARAM.UNCORRELATED_TAU_.toString()
                         || labels[i] ==
-                        Mutation.PARAM.UNCORRELATED_ETHA.toString())
+                        Mutation.PARAM.UNCORRELATED_EPSILON.toString())
                 {
                     minR[i] = 0.0;
                     maxR[i] = 1.0;
@@ -190,12 +191,14 @@ public class FitPopulation extends Population
                     tmp_fitness += value;
                 }
                 tmp_fitness /= nRuns;
+                /*
                 double tmp = 0.0;
                 for (double value : runs)
                 {
                     tmp += Math.pow((value - tmp_fitness), 2);
                 }
                 tmp_fitness -= (Math.sqrt(tmp / (nRuns - 1.0)));
+                */
                 set_fitness(tmp_fitness);
             }
             catch (IOException e)

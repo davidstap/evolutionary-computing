@@ -139,7 +139,9 @@ public class player15 implements ContestSubmission
     {
         // Run your algorithm here
 
-        boolean print = false;
+        boolean print = true;
+
+        Boolean evaluate_islands = false;
 
         String paramsData = System.getProperty("params");
 
@@ -219,11 +221,11 @@ public class player15 implements ContestSubmission
                     2.0);
             mutationParams.put(Mutation.PARAM.MUTATIONRATE.toString(),
                     0.15674689056984625);
-            mutationParams.put(Mutation.PARAM.UNCORRELATED_THETA.toString(),
+            mutationParams.put(Mutation.PARAM.UNCORRELATED_TAU.toString(),
                     -1.095704438555477);
-            mutationParams.put(Mutation.PARAM.UNCORRELATED_THETA_.toString(),
+            mutationParams.put(Mutation.PARAM.UNCORRELATED_TAU_.toString(),
                     0.45324532201202644);
-            mutationParams.put(Mutation.PARAM.UNCORRELATED_ETHA.toString(),
+            mutationParams.put(Mutation.PARAM.UNCORRELATED_EPSILON.toString(),
                     -0.6788386351829894);
         }
         else if (hasStructure && isMultimodal && !isSeparable)
@@ -235,14 +237,29 @@ public class player15 implements ContestSubmission
                     4.308888458176746);
             mutationParams.put(Mutation.PARAM.MUTATIONRATE.toString(),
                     0.15674689056984625);
-            mutationParams.put(Mutation.PARAM.UNCORRELATED_THETA.toString(),
+            mutationParams.put(Mutation.PARAM.UNCORRELATED_TAU.toString(),
                     0.6114465295478755);
-            mutationParams.put(Mutation.PARAM.UNCORRELATED_THETA_.toString(),
+            mutationParams.put(Mutation.PARAM.UNCORRELATED_TAU_.toString(),
                     0.7648987819482205);
-            mutationParams.put(Mutation.PARAM.UNCORRELATED_ETHA.toString(),
+            mutationParams.put(Mutation.PARAM.UNCORRELATED_EPSILON.toString(),
                     0.005432546314306943);
         }
-
+        else if (!hasStructure && isMultimodal && !isSeparable)
+        {
+            popSize = (int)593.0955215665455;
+            parentSelectionParams.put(Selection.PARAM.PARENT_K.toString(),
+                    1125.432004979997);
+            parentSelectionParams.put(Selection.PARAM.TOURNAMENT_SIZE.toString(),
+                    3.7918529902971922);
+            mutationParams.put(Mutation.PARAM.MUTATIONRATE.toString(),
+                    0.13933788018215493);
+            mutationParams.put(Mutation.PARAM.UNCORRELATED_TAU.toString(),
+                    0.8204444139432597);
+            mutationParams.put(Mutation.PARAM.UNCORRELATED_TAU_.toString(),
+                    0.6800603314627643);
+            mutationParams.put(Mutation.PARAM.UNCORRELATED_EPSILON.toString(),
+                    0.018435736790344794);
+        }
 
         if (paramsData != null)
         {
@@ -270,8 +287,6 @@ public class player15 implements ContestSubmission
 
         
         // we ONLY evaluate islands, afterwards terminate. (i.e. not doing normal evolutionary loop)
-        Boolean evaluate_islands = false;
-        
         if (evaluate_islands)
         {
         // XXX Parameters used in Island model (for now split from rest).

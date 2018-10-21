@@ -30,9 +30,6 @@ compile:
 submission:
 	jar cmf $(INFO) submission.jar $(CFILES)
 
-compilef:
-	javac $(JFFILES)
-
 fit:
 	java $(FMAIN)
 

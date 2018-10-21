@@ -1,5 +1,7 @@
 tmp/
 stat/data/
+stat/old_data/
+stat/testdata/
 fitparams/
 
 *~

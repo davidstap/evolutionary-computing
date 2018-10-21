@@ -103,29 +103,31 @@ public class fitting
 //            Selection.PARAM.ROUNDROBIN_Q.toString(),
             Selection.PARAM.TOURNAMENT_SIZE.toString(),
             Mutation.PARAM.MUTATIONRATE.toString(),
-            Mutation.PARAM.UNCORRELATED_THETA.toString(),
-            Mutation.PARAM.UNCORRELATED_THETA_.toString(),
-            Mutation.PARAM.UNCORRELATED_ETHA.toString()
+            Mutation.PARAM.UNCORRELATED_TAU.toString(),
+            Mutation.PARAM.UNCORRELATED_TAU_.toString(),
+            Mutation.PARAM.UNCORRELATED_EPSILON.toString()
         };
 
         // Initialize population
         FitPopulation myPop = new FitPopulation(popSize, rnd_, paramLabels);
         try
         {
-//            myPop = addInitToGenomes(
-//                    myPop, "cat fitparams/good_fittedSchaffers.params");
+//XXX XXX XXX
+            myPop = addInitToGenomes(
+                    myPop, "cat fitparams/000_default.params");
+//XXX XXX XXX
             evals = myPop.evaluate(evals, evaluations_limit_, rnd_);
         }
         catch (IOException e)
         {
             printException(e);
         }
-/*
+//*
         catch (InterruptedException e)
         {
             printException(e);
         }
-*/
+//*/
 
         if (myPop.size() == popSize) {
             // calculate fitness

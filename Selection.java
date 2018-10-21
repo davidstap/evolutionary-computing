@@ -179,7 +179,7 @@ public class Selection
         param = PARAM.ROUNDROBIN_Q.toString();
         int q = params.containsKey(param) ?
                 params.get(param).intValue() :
-                individuals.length;
+                individuals.length / 8 + 1;
         return roundRobin(individuals, rnd, k, q);
     }
 
@@ -308,7 +308,7 @@ public class Selection
         String param = PARAM.SURVIVALROUNDROBIN_Q.toString();
         int q = params.containsKey(param) ?
                 params.get(param).intValue() :
-                parents.length + children.length;
+                (parents.length + children.length) / 8 + 1;
         return survivalRoundRobin(parents, children, rnd, q);
     }
 

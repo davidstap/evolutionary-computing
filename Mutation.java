@@ -12,7 +12,7 @@ public class Mutation {
     public enum PARAM {
         MUTATIONRATE,
         GAUSSIAN_MU, GAUSSIAN_SIGMA,
-        UNCORRELATED_THETA, UNCORRELATED_THETA_, UNCORRELATED_ETHA
+        UNCORRELATED_TAU, UNCORRELATED_TAU_, UNCORRELATED_EPSILON
     }
 
 /*
@@ -195,20 +195,20 @@ public class Mutation {
         double mutationRate = params.containsKey(param) ?
                 params.get(param) :
                 1.0;
-        param = PARAM.UNCORRELATED_THETA.toString();
-        double theta = params.containsKey(param) ?
+        param = PARAM.UNCORRELATED_TAU.toString();
+        double tau = params.containsKey(param) ?
                 params.get(param) :
                 1.0 / Math.sqrt(2 * Math.sqrt(genome.length));
-        param = PARAM.UNCORRELATED_THETA_.toString();
-        double theta_ = params.containsKey(param) ?
+        param = PARAM.UNCORRELATED_TAU_.toString();
+        double tau_ = params.containsKey(param) ?
                 params.get(param) :
                 1.0 / Math.sqrt(2 * genome.length);
-        param = PARAM.UNCORRELATED_ETHA.toString();
-        double etha = params.containsKey(param) ?
+        param = PARAM.UNCORRELATED_EPSILON.toString();
+        double epsilon = params.containsKey(param) ?
                 params.get(param) :
                 0.01;
         return uncorrelated(genome, sigmas, rnd, lowerBound, upperBound,
-                mutationRate, theta, theta_, etha);
+                mutationRate, tau, tau_, epsilon);
     }
 
     // Main uncorrelated method.
@@ -220,7 +220,7 @@ public class Mutation {
             double[] genome, double[] sigmas, Random rnd,
             double[] lowerBound, double[] upperBound,
             double mutationRate,
-            double theta, double theta_, double etha)
+            double tau, double tau_, double epsilon)
     {
         double[] tmp;
         for (int i = 0; i < genome.length; i++)
@@ -230,7 +230,7 @@ public class Mutation {
             {
                 tmp = uncorrelated_(genome[i], sigmas[i], rnd,
                         lowerBound[i], upperBound[i],
-                        theta, theta_, etha);
+                        tau, tau_, epsilon);
                 sigmas[i] = tmp[1];
                 genome[i] = tmp[0];
             }
@@ -242,7 +242,7 @@ public class Mutation {
     public static double[] uncorrelated_(
             double gene, double sigma, Random rnd,
             double lowerBound, double upperBound,
-            double theta, double theta_, double etha)
+            double tau, double tau_, double epsilon)
     {
         double[] tmp;
         // Keep genome within given range if proper range is given.
@@ -251,7 +251,7 @@ public class Mutation {
             do
             {
                 tmp = uncorrelated__(gene, sigma, rnd,
-                        theta, theta_, etha);
+                        tau, tau_, epsilon);
             }
             while (tmp[0] < lowerBound || tmp[0] > upperBound);
         }
@@ -261,7 +261,7 @@ public class Mutation {
             do
             {
                 tmp = uncorrelated__(gene, sigma, rnd,
-                        theta, theta_, etha);
+                        tau, tau_, epsilon);
             }
             while (tmp[0] < lowerBound);
         }
@@ -269,7 +269,7 @@ public class Mutation {
         else
         {
             tmp = uncorrelated__(gene, sigma, rnd,
-                    theta, theta_, etha);
+                    tau, tau_, epsilon);
         }
         return tmp;
     }
@@ -277,17 +277,17 @@ public class Mutation {
     // Step in uncorrelated calculating new gene and sigma.
     public static double[] uncorrelated__(
             double gene, double sigma, Random rnd,
-            double theta, double theta_, double etha)
+            double tau, double tau_, double epsilon)
     {
         double sValue, gValue;
         // Mutate step size.
         sValue = sigma * Math.pow(Math.E,
-                theta_ * N(rnd, 0, 1) +
-                theta * N(rnd, 0, 1));
+                tau_ * N(rnd, 0, 1) +
+                tau * N(rnd, 0, 1));
         // Correct for step sizes that are too small.
-        if (sValue < etha)
+        if (sValue < epsilon)
         {
-            sValue = etha;
+            sValue = epsilon;
         }
         // Mutate genome.
         gValue = gene + sValue * N(rnd, 0, 1);
